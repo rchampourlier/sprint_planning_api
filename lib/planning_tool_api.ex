@@ -10,7 +10,7 @@ defmodule PlanningToolApi do
       # Start the endpoint when the application starts
       supervisor(PlanningToolApi.Endpoint, []),
       # Start the Ecto repository
-      worker(PlanningToolApi.Repo, []),
+      # worker(PlanningToolApi.Repo, []),
       # Here you could define other workers and supervisors as children
       # worker(PlanningToolApi.Worker, [arg1, arg2, arg3]),
     ]

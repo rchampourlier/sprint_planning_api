@@ -24,6 +24,10 @@ config :planning_tool_api, PlanningToolApi.Endpoint,
     ]
   ]
 
+config :planning_tool_api, :jira_search_issues, PlanningToolApi.JIRA.SearchIssues.HTTPoison
+config :planning_tool_api, :jira_fetch_issues, PlanningToolApi.JIRA.FetchIssues.HTTPoison
+config :planning_tool_api, :jira_get_issue, PlanningToolApi.JIRA.FetchIssue.HTTPoison
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -33,10 +37,10 @@ config :logger, :console, format: "[$level] $message\n"
 config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
-config :planning_tool_api, PlanningToolApi.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "rchampourlier",
-  password: "",
-  database: "planning_tool_api_dev",
-  hostname: "localhost",
-  pool_size: 10
+# config :planning_tool_api, PlanningToolApi.Repo,
+#   adapter: Ecto.Adapters.Postgres,
+#   username: "rchampourlier",
+#   password: "",
+#   database: "planning_tool_api_dev",
+#   hostname: "localhost",
+#   pool_size: 10

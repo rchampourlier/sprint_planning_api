@@ -29,9 +29,9 @@ defmodule PlanningToolApi.Web do
     quote do
       use Phoenix.Controller
 
-      alias PlanningToolApi.Repo
-      import Ecto.Model
-      import Ecto.Query, only: [from: 1, from: 2]
+      # alias PlanningToolApi.Repo
+      # import Ecto.Model
+      # import Ecto.Query, only: [from: 1, from: 2]
 
       import PlanningToolApi.Router.Helpers
     end
@@ -61,9 +61,9 @@ defmodule PlanningToolApi.Web do
     quote do
       use Phoenix.Channel
 
-      alias PlanningToolApi.Repo
-      import Ecto.Model
-      import Ecto.Query, only: [from: 1, from: 2]
+      # alias PlanningToolApi.Repo
+      # import Ecto.Model
+      # import Ecto.Query, only: [from: 1, from: 2]
     end
   end
 

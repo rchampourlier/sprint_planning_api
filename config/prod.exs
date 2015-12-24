@@ -16,6 +16,10 @@ config :planning_tool_api, PlanningToolApi.Endpoint,
   url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/manifest.json"
 
+config :planning_tool_api,
+  :jira_search_issues, PlanningToolApi.JIRA.SearchIssues.InMemory
+
+
 # Do not print debug messages in production
 config :logger, level: :info
 

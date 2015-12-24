@@ -19,7 +19,8 @@ defmodule PlanningToolApi.Mixfile do
   def application do
     [mod: {PlanningToolApi, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger,
-                    :phoenix_ecto, :postgrex]]
+                    :phoenix_ecto, :postgrex,
+                    :httpoison]]
   end
 
   # Specifies which paths to compile per environment.
@@ -35,7 +36,13 @@ defmodule PlanningToolApi.Mixfile do
      {:postgrex, ">= 0.0.0"},
      {:phoenix_html, "~> 2.1"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
-     {:cowboy, "~> 1.0"}]
+     {:cowboy, "~> 1.0"},
+     {:httpoison, "~> 0.8.0"},
+     {:remodel, "~> 0.0.1"},
+     {:mock, "~> 0.1.1", only: :test},
+     {:poolboy, "~> 1.5.1"},
+     {:exactor, "~> 2.2.0"}
+    ]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
