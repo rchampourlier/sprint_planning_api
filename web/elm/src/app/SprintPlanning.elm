@@ -139,8 +139,7 @@ view address model =
   in
     div [ class "sprint-planning" ]
       [ div [ class "issues-box box mui-panel mui-col-md-8" ]
-        [ h2 [] [ text "Issues" ]
-        , div [] [ viewIssues address "TODO" issuesTodo teamMemberNames ]
+        [ div [] [ viewIssues address "TODO" issuesTodo teamMemberNames ]
         , div [] [ viewIssues address "DONE" issuesDone teamMemberNames ]
         ]
       , div [ class "team-members-box box mui-panel mui-col-md-4" ]

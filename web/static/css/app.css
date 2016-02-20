@@ -30,6 +30,11 @@ h1 {
 
 /* TEAM MEMBERS */
 
+.team-members-box {
+  position: fixed;
+  right: 0;
+}
+
 .team-members-list {
   margin-bottom: 20px;
   width: 100%;
