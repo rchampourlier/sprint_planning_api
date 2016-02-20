@@ -24,6 +24,11 @@ config :planning_tool_api, PlanningToolApi.Endpoint,
     ]
   ]
 
+# Test with In-Memory simulation
+# config :planning_tool_api, :jira_search_issues, PlanningToolApi.JIRA.SearchIssues.InMemory
+# config :planning_tool_api, :jira_fetch_issues, PlanningToolApi.JIRA.FetchIssues.InMemory
+
+# Real JIRA connection
 config :planning_tool_api, :jira_search_issues, PlanningToolApi.JIRA.SearchIssues.HTTPoison
 config :planning_tool_api, :jira_fetch_issues, PlanningToolApi.JIRA.FetchIssues.HTTPoison
 config :planning_tool_api, :jira_get_issue, PlanningToolApi.JIRA.FetchIssue.HTTPoison
