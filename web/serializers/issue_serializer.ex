@@ -17,7 +17,7 @@ defmodule PlanningTool.IssueSerializer do
 
   # Returns remaining estimate in hours
   def estimate(%{"fields" => %{"timetracking" => %{"remainingEstimateSeconds" => value}}}) do
-    value / 3600
+    round(value / 3600)
   end
   def estimate(_) do
     0
