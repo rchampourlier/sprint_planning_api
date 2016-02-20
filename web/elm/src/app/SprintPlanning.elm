@@ -180,7 +180,7 @@ viewTeamMembers address model =
 getIssues : String -> Effects Action
 getIssues jqlQuery =
   let
-    url_base = "http://api.sprint-planning.dev/issues"
+    url_base = "/api/issues"
     url = Http.url url_base [ ]
   in
     Http.get (Json.list decodeIssue) url

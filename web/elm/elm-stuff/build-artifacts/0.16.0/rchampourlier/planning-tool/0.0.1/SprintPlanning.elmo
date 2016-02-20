@@ -53,7 +53,7 @@ Elm.SprintPlanning.make = function (_elm) {
    });
    var ReceivedIssues = function (a) {    return {ctor: "ReceivedIssues",_0: a};};
    var getIssues = function (jqlQuery) {
-      var url_base = "http://api.sprint-planning.dev/issues";
+      var url_base = "/api/issues";
       var url = A2($Http.url,url_base,_U.list([]));
       return $Effects.task(A2($Task.map,ReceivedIssues,$Task.toMaybe(A2($Http.get,$Json$Decode.list(decodeIssue),url))));
    };
