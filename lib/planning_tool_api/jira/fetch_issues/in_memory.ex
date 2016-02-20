@@ -11,7 +11,15 @@ defmodule PlanningToolApi.JIRA.FetchIssues.InMemory do
       "fields" => %{
         "summary" => "summary",
         "description" => "description",
-        "timeestimate" => :random.uniform(1000000)
+        "timetracking" => %{
+          "remainingEstimateSeconds" => :random.uniform(100)
+        },
+        "customfield_10600" => %{
+          "key" => "author-#{:random.uniform(3)}"
+        },
+        "customfield_10601" => %{
+          "key" => "author-#{:random.uniform(3)}"
+        }
       }
     }
   end

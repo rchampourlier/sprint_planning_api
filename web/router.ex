@@ -19,7 +19,7 @@ defmodule PlanningToolApi.Router do
   #   get "/", PageController, :index
   # end
 
-  scope "/api", PlanningToolApi do
+  scope "/", PlanningToolApi do
     pipe_through :api
 
     resources "/issues", IssuesController

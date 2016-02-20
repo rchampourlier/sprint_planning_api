@@ -6,7 +6,7 @@ defmodule PlanningToolApi.JIRA.SearchIssues.InMemory do
   end
 
   defp build_issue_key do
-    :random.uniform(1000)
+    "PROJ-#{:random.uniform(1000)}"
   end
 
   defp build_issue_keys(0), do: []

@@ -5,7 +5,7 @@ defmodule PlanningToolApi.JIRA.FetchIssues.HTTPoison do
   def execute(keys) do
     {:ok, _pid} = pool_for_get_issue()
     start_get_issue_jobs(keys)
-    collect_responses(keys)
+    collect_job_responses(keys)
   end
 
   defp start_get_issue_jobs(keys) do
@@ -20,13 +20,13 @@ defmodule PlanningToolApi.JIRA.FetchIssues.HTTPoison do
     send caller, {:ok, response}
   end
 
-  defp collect_responses(keys) do
+  defp collect_job_responses(keys) do
     Enum.map(1..length(keys), fn(_) ->
-      get_response()
+      get_job_response()
     end)
   end
 
-  defp get_response do
+  defp get_job_response do
     receive do
       {:ok, response} -> response
     end
