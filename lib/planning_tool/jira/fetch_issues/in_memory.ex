@@ -12,7 +12,7 @@ defmodule PlanningTool.JIRA.FetchIssues.InMemory do
         "summary" => "summary",
         "description" => "description",
         "timetracking" => %{
-          "remainingEstimateSeconds" => :random.uniform(100)
+          "remainingEstimateSeconds" => :random.uniform(100*3600)
         },
         "customfield_10600" => %{
           "key" => "author-#{:random.uniform(3)}"
