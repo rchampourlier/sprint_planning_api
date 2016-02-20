@@ -41,6 +41,7 @@ exports.config = {
     watched: [
       "deps/phoenix/web/static",
       "deps/phoenix_html/web/static",
+      "web/elm/src",
       "web/static",
       "test/static"
     ],
@@ -53,8 +54,22 @@ exports.config = {
   plugins: {
     babel: {
       // Do not use ES6 compiler in vendor code
-      ignore: [/web\/static\/vendor/]
-    }
+      ignore: [/bower_components/, /web\/static\/vendor/]
+    },
+    elmBrunch: {
+      // Set to path where elm-package.json is located, defaults to project root (optional)
+      // if your elm files are not in /app then make sure to configure paths.watched in main brunch config
+      elmFolder: 'web/elm',
+
+      // Set to the elm file(s) containing your "main" function
+      // `elm make` handles all elm dependencies (required)
+      // relative to `elmFolder`
+      mainModules: ['src/Main.elm'],
+
+      // Defaults to 'js/' folder in paths.public (optional)
+      outputFolder: '../static/vendor'
+   }
+
   },
 
   modules: {

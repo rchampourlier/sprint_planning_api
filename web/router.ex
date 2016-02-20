@@ -1,25 +1,25 @@
-defmodule PlanningToolApi.Router do
-  use PlanningToolApi.Web, :router
+defmodule PlanningTool.Router do
+  use PlanningTool.Web, :router
 
-  # pipeline :browser do
-  #   plug :accepts, ["html"]
-  #   plug :fetch_session
-  #   plug :fetch_flash
-  #   plug :protect_from_forgery
-  #   plug :put_secure_browser_headers
-  # end
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_flash
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
-  # scope "/", PlanningToolApi do
-  #   pipe_through :browser # Use the default browser stack
-  #
-  #   get "/", PageController, :index
-  # end
+  scope "/", PlanningTool do
+    pipe_through :browser # Use the default browser stack
 
-  scope "/", PlanningToolApi do
+    get "/", PageController, :index
+  end
+
+  scope "/api", PlanningTool do
     pipe_through :api
 
     resources "/issues", IssuesController

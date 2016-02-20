@@ -1,8 +1,8 @@
-defmodule PlanningToolApi.UserSocket do
+defmodule PlanningTool.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "rooms:*", PlanningToolApi.RoomChannel
+  # channel "rooms:*", PlanningTool.RoomChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
@@ -30,7 +30,7 @@ defmodule PlanningToolApi.UserSocket do
   # Would allow you to broadcast a "disconnect" event and terminate
   # all active sockets and channels for a given user:
   #
-  #     PlanningToolApi.Endpoint.broadcast("users_socket:" <> user.id, "disconnect", %{})
+  #     PlanningTool.Endpoint.broadcast("users_socket:" <> user.id, "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
   def id(_socket), do: nil

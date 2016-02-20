@@ -1,0 +1,71 @@
+Elm.Mui = Elm.Mui || {};
+Elm.Mui.make = function (_elm) {
+   "use strict";
+   _elm.Mui = _elm.Mui || {};
+   if (_elm.Mui.values) return _elm.Mui.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $MoreHtmlEvents = Elm.MoreHtmlEvents.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var viewOptionWithAttributes = F2(function (optionText,isSelected) {
+      return isSelected ? A3($Html.node,
+      "option",
+      _U.list([A2($Html$Attributes.attribute,"selected","selected")]),
+      _U.list([$Html.text(optionText)])) : A3($Html.node,"option",_U.list([]),_U.list([$Html.text(optionText)]));
+   });
+   var viewOption = F2(function (model,_p0) {
+      var _p1 = _p0;
+      var _p3 = _p1._1;
+      var _p2 = model.selectedOptionID;
+      if (_p2.ctor === "Nothing") {
+            return A2(viewOptionWithAttributes,_p3,false);
+         } else {
+            return _U.eq(_p2._0,_p1._0) ? A2(viewOptionWithAttributes,_p3,true) : A2(viewOptionWithAttributes,_p3,false);
+         }
+   });
+   var viewBlankOption = function (model) {
+      var _p4 = model.selectedOptionID;
+      if (_p4.ctor === "Nothing") {
+            return A2(viewOptionWithAttributes,model.blankLabel,true);
+         } else {
+            return A2(viewOptionWithAttributes,model.blankLabel,false);
+         }
+   };
+   var selectedID = function (action) {    var _p5 = action;return _p5._0;};
+   var SelectedOption = function (a) {    return {ctor: "SelectedOption",_0: a};};
+   var idForValue = F2(function (value,model) {
+      var matchValue = function (option) {    return _U.eq($Basics.snd(option),value);};
+      var matchingOption = $List.head(A2($List.filter,matchValue,model.options));
+      var _p6 = matchingOption;
+      if (_p6.ctor === "Nothing") {
+            return A2($Debug.log,"idForValue -> Nothing",$Maybe.Nothing);
+         } else {
+            var _p7 = _p6._0;
+            return A3($Debug.log,A2($Basics._op["++"],"idForValue -> ",$Basics.toString(_p7)),$Maybe.Just,$Basics.fst(_p7));
+         }
+   });
+   var valueToAction = F2(function (model,value) {    return SelectedOption(A2(idForValue,value,model));});
+   var view = F2(function (address,model) {
+      var baseViewOptions = A2($List.map,viewOption(model),model.options);
+      var viewOptions = A2($Basics._op["++"],_U.list([viewBlankOption(model)]),baseViewOptions);
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("mui-select"),A2($MoreHtmlEvents.onChange,address,valueToAction(model))]),
+      _U.list([A2($Html.select,_U.list([]),viewOptions)]));
+   });
+   var init = F3(function (blankLabel,options,maybeSelectedOptionID) {
+      return {blankLabel: blankLabel,options: options,selectedOptionID: maybeSelectedOptionID};
+   });
+   var Model = F3(function (a,b,c) {    return {blankLabel: a,options: b,selectedOptionID: c};});
+   var selectBox = F4(function (address,blankLabel,options,maybeSelectedOptionID) {
+      var model = A3(init,blankLabel,options,maybeSelectedOptionID);
+      return A2(view,address,model);
+   });
+   return _elm.Mui.values = {_op: _op,selectBox: selectBox,selectedID: selectedID};
+};

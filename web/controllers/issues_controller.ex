@@ -1,9 +1,9 @@
-defmodule PlanningToolApi.IssuesController do
-  use PlanningToolApi.Web, :controller
+defmodule PlanningTool.IssuesController do
+  use PlanningTool.Web, :controller
 
   def index(conn, _params) do
     response = jira_fetch_issues()
-      |> PlanningToolApi.IssueSerializer.to_map
+      |> PlanningTool.IssueSerializer.to_map
     json conn, response
   end
 
@@ -13,10 +13,10 @@ defmodule PlanningToolApi.IssuesController do
   end
 
   defp jira_search_issues_module do
-    Application.get_env(:planning_tool_api, :jira_search_issues)
+    Application.get_env(:planning_tool, :jira_search_issues)
   end
 
   defp jira_fetch_issues_module do
-    Application.get_env(:planning_tool_api, :jira_fetch_issues)
+    Application.get_env(:planning_tool, :jira_fetch_issues)
   end
 end

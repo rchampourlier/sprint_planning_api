@@ -1,0 +1,28 @@
+Elm.DragAndDropEvents = Elm.DragAndDropEvents || {};
+Elm.DragAndDropEvents.make = function (_elm) {
+   "use strict";
+   _elm.DragAndDropEvents = _elm.DragAndDropEvents || {};
+   if (_elm.DragAndDropEvents.values) return _elm.DragAndDropEvents.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var onDrop = F2(function (addr,message) {
+      return A3($Html$Events.on,"drop",$Json$Decode.value,function (_p0) {    return A2($Signal.message,addr,message);});
+   });
+   var onDragOver = F2(function (addr,message) {
+      var options = {stopPropagation: true,preventDefault: true};
+      return A4($Html$Events.onWithOptions,"dragover",options,$Json$Decode.value,function (_p1) {    return A2($Signal.message,addr,message);});
+   });
+   var onDrag = F2(function (addr,message) {
+      return A3($Html$Events.on,"drag",$Json$Decode.value,function (_p2) {    return A2($Signal.message,addr,message);});
+   });
+   return _elm.DragAndDropEvents.values = {_op: _op,onDrag: onDrag,onDragOver: onDragOver,onDrop: onDrop};
+};

@@ -1,4 +1,4 @@
-defmodule PlanningToolApi.IssueSerializer do
+defmodule PlanningTool.IssueSerializer do
   use Remodel
 
   attributes [:key, :summary, :description, :estimate, :developer, :reviewer]

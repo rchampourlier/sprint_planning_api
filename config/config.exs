@@ -6,12 +6,12 @@
 use Mix.Config
 
 # Configures the endpoint
-config :planning_tool_api, PlanningToolApi.Endpoint,
+config :planning_tool, PlanningTool.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
   secret_key_base: "Oez0uPLwCs3EuBTbIg5DcV6n4r091vTovECvVXcFwvORWvXPC688Yky/8/CRgi6M",
   render_errors: [accepts: ~w(html json)],
-  pubsub: [name: PlanningToolApi.PubSub,
+  pubsub: [name: PlanningTool.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger

@@ -1,4 +1,4 @@
-defmodule PlanningToolApi.ConnCase do
+defmodule PlanningTool.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -20,20 +20,20 @@ defmodule PlanningToolApi.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
 
-      alias PlanningToolApi.Repo
+      alias PlanningTool.Repo
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
 
-      import PlanningToolApi.Router.Helpers
+      import PlanningTool.Router.Helpers
 
       # The default endpoint for testing
-      @endpoint PlanningToolApi.Endpoint
+      @endpoint PlanningTool.Endpoint
     end
   end
 
   setup tags do
     unless tags[:async] do
-      Ecto.Adapters.SQL.restart_test_transaction(PlanningToolApi.Repo, [])
+      Ecto.Adapters.SQL.restart_test_transaction(PlanningTool.Repo, [])
     end
 
     :ok

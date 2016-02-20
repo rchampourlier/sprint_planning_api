@@ -6,7 +6,7 @@ use Mix.Config
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with brunch.io to recompile .js and .css sources.
-config :planning_tool_api, PlanningToolApi.Endpoint,
+config :planning_tool, PlanningTool.Endpoint,
   http: [port: 4000],
   debug_errors: true,
   code_reloader: true,
@@ -15,7 +15,7 @@ config :planning_tool_api, PlanningToolApi.Endpoint,
   watchers: [node: ["node_modules/brunch/bin/brunch", "watch", "--stdin"]]
 
 # Watch static and templates for browser reloading.
-config :planning_tool_api, PlanningToolApi.Endpoint,
+config :planning_tool, PlanningTool.Endpoint,
   live_reload: [
     patterns: [
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
@@ -25,13 +25,13 @@ config :planning_tool_api, PlanningToolApi.Endpoint,
   ]
 
 # Test with In-Memory simulation
-# config :planning_tool_api, :jira_search_issues, PlanningToolApi.JIRA.SearchIssues.InMemory
-# config :planning_tool_api, :jira_fetch_issues, PlanningToolApi.JIRA.FetchIssues.InMemory
+# config :planning_tool, :jira_search_issues, PlanningTool.JIRA.SearchIssues.InMemory
+# config :planning_tool, :jira_fetch_issues, PlanningTool.JIRA.FetchIssues.InMemory
 
 # Real JIRA connection
-config :planning_tool_api, :jira_search_issues, PlanningToolApi.JIRA.SearchIssues.HTTPoison
-config :planning_tool_api, :jira_fetch_issues, PlanningToolApi.JIRA.FetchIssues.HTTPoison
-config :planning_tool_api, :jira_get_issue, PlanningToolApi.JIRA.FetchIssue.HTTPoison
+config :planning_tool, :jira_search_issues, PlanningTool.JIRA.SearchIssues.HTTPoison
+config :planning_tool, :jira_fetch_issues, PlanningTool.JIRA.FetchIssues.HTTPoison
+config :planning_tool, :jira_get_issue, PlanningTool.JIRA.FetchIssue.HTTPoison
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -42,10 +42,10 @@ config :logger, :console, format: "[$level] $message\n"
 config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
-# config :planning_tool_api, PlanningToolApi.Repo,
+# config :planning_tool, PlanningTool.Repo,
 #   adapter: Ecto.Adapters.Postgres,
 #   username: "rchampourlier",
 #   password: "",
-#   database: "planning_tool_api_dev",
+#   database: "planning_tool_dev",
 #   hostname: "localhost",
 #   pool_size: 10

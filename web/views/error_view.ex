@@ -1,5 +1,5 @@
-defmodule PlanningToolApi.ErrorView do
-  use PlanningToolApi.Web, :view
+defmodule PlanningTool.ErrorView do
+  use PlanningTool.Web, :view
 
   def render("404.html", _assigns) do
     "Page not found"

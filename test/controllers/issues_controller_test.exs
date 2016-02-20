@@ -1,4 +1,4 @@
-defmodule PlanningToolApi.IssuesControllerTest do
+defmodule PlanningTool.IssuesControllerTest do
   use ExUnit.Case, async: false
   use Plug.Test
 

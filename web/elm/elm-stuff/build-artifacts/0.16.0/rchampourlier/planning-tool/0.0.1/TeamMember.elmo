@@ -1,0 +1,81 @@
+Elm.TeamMember = Elm.TeamMember || {};
+Elm.TeamMember.make = function (_elm) {
+   "use strict";
+   _elm.TeamMember = _elm.TeamMember || {};
+   if (_elm.TeamMember.values) return _elm.TeamMember.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $IntegerInput = Elm.IntegerInput.make(_elm),
+   $List = Elm.List.make(_elm),
+   $MathUtils = Elm.MathUtils.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $StringInput = Elm.StringInput.make(_elm);
+   var _op = {};
+   var updateAssignments = F2(function (model,roleAssignments) {
+      var applyAssignment = F2(function (_p0,model) {
+         var _p1 = _p0;
+         var _p3 = _p1._1;
+         var _p2 = _p1._0;
+         if (_p2.ctor === "Developer") {
+               return _U.update(model,{assignmentDeveloper: _p3});
+            } else {
+               return _U.update(model,{assignmentReviewer: _p3});
+            }
+      });
+      return A3($List.foldl,applyAssignment,model,roleAssignments);
+   });
+   var update = F2(function (action,model) {
+      var _p4 = action;
+      if (_p4.ctor === "ModifyCapacity") {
+            return _U.update(model,{capacity: A2($IntegerInput.update,_p4._0,model.capacity)});
+         } else {
+            return _U.update(model,{name: A2($StringInput.update,_p4._0,model.name)});
+         }
+   });
+   var ModifyName = function (a) {    return {ctor: "ModifyName",_0: a};};
+   var ModifyCapacity = function (a) {    return {ctor: "ModifyCapacity",_0: a};};
+   var getName = function (model) {    return $StringInput.getValue(model.name);};
+   var getCapacity = function (model) {    return $IntegerInput.getValue(model.capacity);};
+   var getAssigned = function (model) {    return $Basics.toFloat(model.assignmentDeveloper) + 0.2 * $Basics.toFloat(model.assignmentReviewer);};
+   var view = F2(function (address,model) {
+      var viewCapacityInput = A2($IntegerInput.view,A2($Signal.forwardTo,address,ModifyCapacity),model.capacity);
+      var viewNameInput = A2($StringInput.view,A2($Signal.forwardTo,address,ModifyName),model.name);
+      var assigned = A2($MathUtils.floatRound,getAssigned(model),1);
+      var viewAssigned = A2($Html.span,_U.list([]),_U.list([$Html.text($Basics.toString(assigned))]));
+      return A2($Html.tr,
+      _U.list([$Html$Attributes.$class("team-members-list__item")]),
+      _U.list([A2($Html.td,
+              _U.list([$Html$Attributes.$class("team-members-list__item__segment team-members-list__item__segment--name")]),
+              _U.list([viewNameInput]))
+              ,A2($Html.td,
+              _U.list([$Html$Attributes.$class("team-members-list__item__segment team-members-list__item__segment--capacity")]),
+              _U.list([viewCapacityInput]))
+              ,A2($Html.td,
+              _U.list([$Html$Attributes.$class("team-members-list__item__segment team-members-list__item__segment--assigned")]),
+              _U.list([viewAssigned]))]));
+   });
+   var init = F2(function (name,capacity) {
+      return {capacity: $IntegerInput.init(capacity),name: $StringInput.init(name),assignmentDeveloper: 0,assignmentReviewer: 0};
+   });
+   var Model = F4(function (a,b,c,d) {    return {capacity: a,name: b,assignmentDeveloper: c,assignmentReviewer: d};});
+   var Reviewer = {ctor: "Reviewer"};
+   var Developer = {ctor: "Developer"};
+   return _elm.TeamMember.values = {_op: _op
+                                   ,Developer: Developer
+                                   ,Reviewer: Reviewer
+                                   ,Model: Model
+                                   ,init: init
+                                   ,getAssigned: getAssigned
+                                   ,getCapacity: getCapacity
+                                   ,getName: getName
+                                   ,ModifyCapacity: ModifyCapacity
+                                   ,ModifyName: ModifyName
+                                   ,update: update
+                                   ,updateAssignments: updateAssignments
+                                   ,view: view};
+};

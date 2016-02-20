@@ -1,0 +1,88 @@
+Elm.TeamMemberList = Elm.TeamMemberList || {};
+Elm.TeamMemberList.make = function (_elm) {
+   "use strict";
+   _elm.TeamMemberList = _elm.TeamMemberList || {};
+   if (_elm.TeamMemberList.values) return _elm.TeamMemberList.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $IndexedList = Elm.IndexedList.make(_elm),
+   $List = Elm.List.make(_elm),
+   $ListFunctions = Elm.ListFunctions.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $ProgressBar = Elm.ProgressBar.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $TeamMember = Elm.TeamMember.make(_elm);
+   var _op = {};
+   var updateAssignments = F2(function (model,assignments) {
+      var applyAssignments = F2(function (_p0,model) {
+         var _p1 = _p0;
+         var applyIfMatchingName = function (_p2) {
+            var _p3 = _p2;
+            var _p5 = _p3._1;
+            var _p4 = _p3._0;
+            return _U.eq($TeamMember.getName(_p5),_p1._0) ? {ctor: "_Tuple2",_0: _p4,_1: A2($TeamMember.updateAssignments,_p5,_p1._1)} : {ctor: "_Tuple2"
+                                                                                                                                         ,_0: _p4
+                                                                                                                                         ,_1: _p5};
+         };
+         return A2($List.map,applyIfMatchingName,model);
+      });
+      return A3($List.foldl,applyAssignments,model,assignments);
+   });
+   var update = F2(function (action,model) {
+      var _p6 = action;
+      switch (_p6.ctor)
+      {case "Add": return A2($IndexedList.append,model,A2($TeamMember.init,"Unknown",0));
+         case "Remove": return model;
+         default: var updateTeamMember = function (_p7) {
+              var _p8 = _p7;
+              var _p10 = _p8._1;
+              var _p9 = _p8._0;
+              return _U.eq(_p9,_p6._0) ? {ctor: "_Tuple2",_0: _p9,_1: A2($TeamMember.update,_p6._1,_p10)} : {ctor: "_Tuple2",_0: _p9,_1: _p10};
+           };
+           return A2($List.map,updateTeamMember,model);}
+   });
+   var Modify = F2(function (a,b) {    return {ctor: "Modify",_0: a,_1: b};});
+   var viewTeamMember = F3(function (address,maxCapacity,_p11) {
+      var _p12 = _p11;
+      var _p13 = _p12._1;
+      var capacity = $Basics.toFloat($TeamMember.getCapacity(_p13));
+      var assigned = $TeamMember.getAssigned(_p13);
+      var remainingRatio = (capacity - assigned) / capacity;
+      return _U.list([A2($TeamMember.view,A2($Signal.forwardTo,address,Modify(_p12._0)),_p13),$ProgressBar.view(remainingRatio)]);
+   });
+   var viewTeamMemberList = F3(function (address,model,maxCapacity) {    return A2($List.concatMap,A2(viewTeamMember,address,maxCapacity),model);});
+   var Remove = function (a) {    return {ctor: "Remove",_0: a};};
+   var Add = {ctor: "Add"};
+   var getMaxCapacity = function (model) {
+      return A2($Maybe.withDefault,0,$List.maximum(A2($List.map,function (_p14) {    var _p15 = _p14;return $TeamMember.getCapacity(_p15._1);},model)));
+   };
+   var view = F2(function (address,model) {
+      var viewButtonAdd = A2($Html.button,
+      _U.list([$Html$Attributes.$class("mui-btn mui-btn--primary"),A2($Html$Events.onClick,address,Add)]),
+      _U.list([$Html.text("Add")]));
+      var maxCapacity = $Basics.toFloat(getMaxCapacity(model));
+      var viewList = A3(viewTeamMemberList,address,model,maxCapacity);
+      return A2($Html.div,_U.list([]),_U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),viewList),viewButtonAdd]));
+   });
+   var getNames = function (model) {
+      return A2($List.map,function (tm) {    return $TeamMember.getName(tm);},A2($List.map,function (_p16) {    var _p17 = _p16;return _p17._1;},model));
+   };
+   var init = function (names) {    return A2($ListFunctions.indexList,0,A2($List.map,function (name) {    return A2($TeamMember.init,name,0);},names));};
+   return _elm.TeamMemberList.values = {_op: _op
+                                       ,init: init
+                                       ,getNames: getNames
+                                       ,getMaxCapacity: getMaxCapacity
+                                       ,Add: Add
+                                       ,Remove: Remove
+                                       ,Modify: Modify
+                                       ,update: update
+                                       ,updateAssignments: updateAssignments
+                                       ,view: view
+                                       ,viewTeamMemberList: viewTeamMemberList
+                                       ,viewTeamMember: viewTeamMember};
+};

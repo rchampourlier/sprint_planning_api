@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "gulp": "latest",
+    "gulp-watch": "4.2.5",
+    "gulp-batch": "latest",
+    "gulp-shell": "latest",
+    "gulp-debug": "latest",
+    "gulp-webserver": "latest"
+  },
+  "source-directories": [
+    "app",
+    "mui"
+  ],
+  "dependencies": {
+    "bower": "^1.7.7"
+  }
+}

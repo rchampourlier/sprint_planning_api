@@ -1,3 +1,3 @@
-defmodule PlanningToolApi.LayoutView do
-  use PlanningToolApi.Web, :view
+defmodule PlanningTool.LayoutView do
+  use PlanningTool.Web, :view
 end

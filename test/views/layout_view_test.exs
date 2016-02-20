@@ -1,3 +1,3 @@
-defmodule PlanningToolApi.LayoutViewTest do
-  use PlanningToolApi.ConnCase, async: true
+defmodule PlanningTool.LayoutViewTest do
+  use PlanningTool.ConnCase, async: true
 end

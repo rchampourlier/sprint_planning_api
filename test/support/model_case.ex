@@ -1,4 +1,4 @@
-defmodule PlanningToolApi.ModelCase do
+defmodule PlanningTool.ModelCase do
   @moduledoc """
   This module defines the test case to be used by
   model tests.
@@ -16,16 +16,16 @@ defmodule PlanningToolApi.ModelCase do
 
   using do
     quote do
-      alias PlanningToolApi.Repo
+      alias PlanningTool.Repo
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
-      import PlanningToolApi.ModelCase
+      import PlanningTool.ModelCase
     end
   end
 
   setup tags do
     unless tags[:async] do
-      Ecto.Adapters.SQL.restart_test_transaction(PlanningToolApi.Repo, [])
+      Ecto.Adapters.SQL.restart_test_transaction(PlanningTool.Repo, [])
     end
 
     :ok

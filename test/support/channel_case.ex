@@ -1,4 +1,4 @@
-defmodule PlanningToolApi.ChannelCase do
+defmodule PlanningTool.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -20,19 +20,19 @@ defmodule PlanningToolApi.ChannelCase do
       # Import conveniences for testing with channels
       use Phoenix.ChannelTest
 
-      alias PlanningToolApi.Repo
+      alias PlanningTool.Repo
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
 
 
       # The default endpoint for testing
-      @endpoint PlanningToolApi.Endpoint
+      @endpoint PlanningTool.Endpoint
     end
   end
 
   setup tags do
     unless tags[:async] do
-      Ecto.Adapters.SQL.restart_test_transaction(PlanningToolApi.Repo, [])
+      Ecto.Adapters.SQL.restart_test_transaction(PlanningTool.Repo, [])
     end
 
     :ok

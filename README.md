@@ -1,4 +1,4 @@
-# PlanningToolApi
+# PlanningTool
 
 To start your Phoenix app:
 

@@ -1,0 +1,31 @@
+Elm.MoreHtmlEvents = Elm.MoreHtmlEvents || {};
+Elm.MoreHtmlEvents.make = function (_elm) {
+   "use strict";
+   _elm.MoreHtmlEvents = _elm.MoreHtmlEvents || {};
+   if (_elm.MoreHtmlEvents.values) return _elm.MoreHtmlEvents.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var onChange = F2(function (address,contentToValue) {
+      return A3($Html$Events.on,"change",$Html$Events.targetValue,function (str) {    return A2($Signal.message,address,contentToValue(str));});
+   });
+   var onDrop = F2(function (address,message) {
+      return A3($Html$Events.on,"drop",$Json$Decode.value,function (_p0) {    return A2($Signal.message,address,message);});
+   });
+   var onDragOver = F2(function (address,message) {
+      var options = {stopPropagation: true,preventDefault: true};
+      return A4($Html$Events.onWithOptions,"dragover",options,$Json$Decode.value,function (_p1) {    return A2($Signal.message,address,message);});
+   });
+   var onDrag = F2(function (address,message) {
+      return A3($Html$Events.on,"drag",$Json$Decode.value,function (_p2) {    return A2($Signal.message,address,message);});
+   });
+   return _elm.MoreHtmlEvents.values = {_op: _op,onDrag: onDrag,onDragOver: onDragOver,onDrop: onDrop,onChange: onChange};
+};
