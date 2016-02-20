@@ -138,13 +138,18 @@ view address model =
     teamMemberNames = TeamMemberList.getNames model.teamMemberList
   in
     div [ class "sprint-planning" ]
-      [ div [ class "issues-box box mui-panel mui-col-md-8" ]
-        [ div [] [ viewIssues address "TODO" issuesTodo teamMemberNames ]
-        , div [] [ viewIssues address "DONE" issuesDone teamMemberNames ]
+      [ div [ class "issues-box mui-col-md-8" ]
+        [ h2 [] [ text <| "Issues" ]
+        , div
+          [ class "mui-panel" ]
+          [ div [] [ viewIssues address "TODO" issuesTodo teamMemberNames ] ]
+        , div
+          [ class "mui-panel" ]
+          [ div [] [ viewIssues address "DONE" issuesDone teamMemberNames ] ]
         ]
-      , div [ class "team-members-box box mui-panel mui-col-md-4" ]
+      , div [ class "team-members-box mui-col-md-4" ]
         [ h2 [] [ text "Team Members" ]
-        , viewTeamMembers address model
+        , div [ class "mui-panel" ] [ viewTeamMembers address model ]
         ]
       ]
 
