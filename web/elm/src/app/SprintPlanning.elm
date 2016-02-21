@@ -139,13 +139,14 @@ view address model =
   in
     div [ class "sprint-planning" ]
       [ div [ class "issues-box mui-col-md-8" ]
-        [ h2 [] [ text <| "Issues" ]
+        [ h2 [] [ text "Issues - TODO" ]
         , div
           [ class "mui-panel" ]
-          [ div [] [ viewIssues address "TODO" issuesTodo teamMemberNames ] ]
+          [ div [] [ viewIssues address issuesTodo teamMemberNames ] ]
+        , h2 [] [ text "Issues - DONE" ]
         , div
           [ class "mui-panel" ]
-          [ div [] [ viewIssues address "DONE" issuesDone teamMemberNames ] ]
+          [ div [] [ viewIssues address issuesDone teamMemberNames ] ]
         ]
       , div [ class "team-members-box mui-col-md-4" ]
         [ h2 [] [ text "Team Members" ]
@@ -153,15 +154,14 @@ view address model =
         ]
       ]
 
-viewIssues : Signal.Address Action -> String -> List Issue.Model -> List String -> Html
-viewIssues address label issues teamMemberNames =
+viewIssues : Signal.Address Action -> List Issue.Model -> List String -> Html
+viewIssues address issues teamMemberNames =
   let
     viewIssue : Issue.Model -> Html
     viewIssue issue = Issue.view (Signal.forwardTo address (ModifyIssue issue)) issue teamMemberNames
   in
     div []
-      [ h3 [] [ text label ]
-      , table [ class "mui-table issues-list" ]
+      [ table [ class "mui-table issues-list" ]
         [ thead []
           [ tr []
             [ th [] [ text "Issue" ]
