@@ -28,8 +28,8 @@ type alias Model =
 
 init : (Model, Effects Action)
 init =
-  ( Model [] (TeamMemberList.init []) Nothing
-  , getIssues "PROJECT = \"JT\""
+  ( Model [] (TeamMemberList.init [])
+  , effectFetchIssues "PROJECT = \"JT\""
   )
 
 getAssignments : List Issue.Model -> List String -> List (String, List (TeamMember.Role, Int))
@@ -89,42 +89,51 @@ update action model =
               |> Set.toList
               |> TeamMemberList.init
           in
-            ( updateWithIssues model issues
-            , Effects.none )
+            ({ model
+                | issues = issues
+                , teamMemberList = updateTeamMemberList model.teamMemberList issues
+              }, Effects.none )
 
     ModifyIssue issue issueAction ->
       let
-        updateIssue i =
-          if i == issue
-            then Issue.update issueAction issue model.draggedTeamMemberName
-            else i
-        issues = List.map updateIssue model.issues
+        -- Beware of comparing on the key, otherwise the issue
+        -- would not be recognized if it's run in a callback
+        -- (Effects result). Also beware of applying the update
+        -- on the correct issue (i, not issue)!
+        updateIssue i = if i.key == issue.key
+          then Issue.update issueAction i
+          else (i, Effects.none)
+        issuesAndEffects = List.map updateIssue model.issues
+        updatedIssues = List.map fst issuesAndEffects
+        effect = List.map snd issuesAndEffects
+          |> List.filter (\e -> e /= Effects.none)
+          |> List.head
+          |> Maybe.withDefault Effects.none
+          |> Effects.map (ModifyIssue issue)
       in
-        ( updateWithIssues model issues
-        , Effects.none )
+        ({ model
+            | issues = updatedIssues
+            , teamMemberList = updateTeamMemberList model.teamMemberList updatedIssues
+          }, effect)
 
     ModifyTeamMembers teamMemberListAction ->
-      ( { model
+      ({ model
           | teamMemberList = TeamMemberList.update teamMemberListAction model.teamMemberList
         }
       , Effects.none )
 
-updateWithIssues : Model -> List Issue.Model -> Model
-updateWithIssues model issues =
+updateTeamMemberList : TeamMemberList.Model -> List Issue.Model -> TeamMemberList.Model
+updateTeamMemberList teamMemberList issues =
   let
-    teamMemberList = case model.teamMemberList of
+    teamMemberList = case teamMemberList of
       [] ->
         Issues.teamMembersNames issues
           |> Set.toList
           |> TeamMemberList.init
-      _ -> model.teamMemberList
+      _ -> teamMemberList
     teamMemberNames = TeamMemberList.getNames teamMemberList
-    updatedTeamMemberList = TeamMemberList.updateAssignments teamMemberList (getAssignments issues teamMemberNames)
   in
-    { model
-      | issues = issues
-      , teamMemberList = updatedTeamMemberList
-    }
+    TeamMemberList.updateAssignments teamMemberList (getAssignments issues teamMemberNames)
 
 
 -- VIEW
@@ -180,8 +189,8 @@ viewTeamMembers address model =
 
 -- EFFECTS
 
-getIssues : String -> Effects Action
-getIssues jqlQuery =
+effectFetchIssues : String -> Effects Action
+effectFetchIssues jqlQuery =
   let
     url_base = "/api/issues"
     url = Http.url url_base [ ]
