@@ -40,12 +40,8 @@ idForValue value model =
     matchingOption = List.head <| List.filter matchValue model.options
   in
     case matchingOption of
-      Nothing ->
-        log "idForValue -> Nothing"
-        Nothing
-      Just option ->
-        log ("idForValue -> " ++ (toString option))
-        Just (fst option)
+      Nothing -> Nothing
+      Just option -> Just (fst option)
 
 
 -- UPDATE
