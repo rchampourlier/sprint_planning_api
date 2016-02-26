@@ -4,7 +4,7 @@ module SprintPlanning where
 import Effects exposing (Effects, Never)
 import Http
 import Html exposing (..)
-import Html.Attributes exposing (class, style, draggable)
+import Html.Attributes exposing (class, style)
 import Json.Decode exposing ((:=))
 import Json.Decode as Json
 import List
@@ -24,7 +24,6 @@ type alias ID = Int
 type alias Model =
   { issues : List Issue.Model
   , teamMemberList : TeamMemberList.Model
-  , draggedTeamMemberName : Maybe String
   }
 
 init : (Model, Effects Action)
