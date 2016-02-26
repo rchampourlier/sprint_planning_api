@@ -41,8 +41,7 @@ defmodule PlanningTool.Mixfile do
      {:remodel, "~> 0.0.1"},
      {:mock, "~> 0.1.1", only: :test},
      {:poolboy, "~> 1.5.1"},
-     {:exactor, "~> 2.2.0"},
-     {:corsica, "~> 0.4"}
+     {:exactor, "~> 2.2.0"}
     ]
   end
 

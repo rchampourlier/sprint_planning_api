@@ -35,9 +35,6 @@ defmodule PlanningTool.Endpoint do
     key: "_planning_tool_key",
     signing_salt: "jLLQrFYr"
 
-  # CORS management
-  plug Corsica, origins: "http://sprint-planning.dev"
-
   # App
   plug PlanningTool.Router
 end
