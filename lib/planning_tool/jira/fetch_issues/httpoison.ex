@@ -82,7 +82,7 @@ defmodule PlanningTool.JIRA.FetchIssues.HTTPoison do
     end
 
     def get_issue_module() do
-      Application.get_env(:planning_tool, :jira_get_issue)
+      Application.get_env(:planning_tool, :jira_fetch_issue)
     end
   end
 end
