@@ -27,11 +27,13 @@ config :planning_tool, PlanningTool.Endpoint,
 # Test with In-Memory simulation
 # config :planning_tool, :jira_search_issues, PlanningTool.JIRA.SearchIssues.InMemory
 # config :planning_tool, :jira_fetch_issues, PlanningTool.JIRA.FetchIssues.InMemory
+# config :planning_tool, :jira_update_issue, PlanningTool.JIRA.UpdateIssue.InMemory
 
 # Real JIRA connection
 config :planning_tool, :jira_search_issues, PlanningTool.JIRA.SearchIssues.HTTPoison
 config :planning_tool, :jira_fetch_issues, PlanningTool.JIRA.FetchIssues.HTTPoison
 config :planning_tool, :jira_fetch_issue, PlanningTool.JIRA.FetchIssue.HTTPoison
+config :planning_tool, :jira_update_issue, PlanningTool.JIRA.UpdateIssue.HTTPoison
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

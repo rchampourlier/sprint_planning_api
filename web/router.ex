@@ -22,6 +22,9 @@ defmodule PlanningTool.Router do
   scope "/api", PlanningTool do
     pipe_through :api
 
-    resources "/issues", IssuesController
+    # Can't use resources because we would have to implement
+    # Http.put on Elm's side, which is a TODO.
+    get "/issues", IssuesController, :index
+    post "/issues/:id", IssuesController, :update
   end
 end
