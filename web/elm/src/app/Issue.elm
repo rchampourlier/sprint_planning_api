@@ -22,8 +22,6 @@ type alias Model =
   , developerName : Maybe String
   , reviewerName : Maybe String
   , isBeingUpdated : Bool
-  , previousDeveloperName : Maybe String
-  , previousReviewerName : Maybe String
   }
 
 init : String -> String -> Int -> Maybe String -> Maybe String -> Model
@@ -34,8 +32,6 @@ init key summary estimate maybeDeveloperName maybeReviewerName =
   , developerName = maybeDeveloperName
   , reviewerName = maybeReviewerName
   , isBeingUpdated = False
-  , previousDeveloperName = Nothing
-  , previousReviewerName = Nothing
   }
 
 
@@ -44,7 +40,7 @@ init key summary estimate maybeDeveloperName maybeReviewerName =
 type Action
   = Assign Role Mui.Action
   | Unassign Role
-  | Updated (Maybe String)
+  | UpdateProcessed Role (Maybe String) (Maybe String) (Maybe String)
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -59,16 +55,12 @@ update action model =
             ({ model
               | isBeingUpdated = True
               , developerName = selectedTeamMemberName
-              , previousDeveloperName = model.developerName
-              , previousReviewerName = model.reviewerName
-            }, effectUpdateIssue model)
+            }, effectUpdateIssue model.key role selectedTeamMemberName model.developerName)
           Reviewer ->
             ({ model
               | isBeingUpdated = True
               , reviewerName = selectedTeamMemberName
-              , previousDeveloperName = model.developerName
-              , previousReviewerName = model.reviewerName
-            }, effectUpdateIssue model)
+            }, effectUpdateIssue model.key role selectedTeamMemberName model.reviewerName)
 
     Unassign role ->
       case role of
@@ -76,26 +68,20 @@ update action model =
           ({ model
             | isBeingUpdated = True
             , developerName = Nothing
-            , previousDeveloperName = model.developerName
-            , previousReviewerName = model.reviewerName
-          }, effectUpdateIssue model)
+          }, effectUpdateIssue model.key role Nothing model.developerName)
         Reviewer ->
           ({ model
             | isBeingUpdated = True
             , reviewerName = Nothing
-            , previousDeveloperName = model.developerName
-            , previousReviewerName = model.reviewerName
-          }, effectUpdateIssue model)
+          }, effectUpdateIssue model.key role Nothing model.reviewerName)
 
-    Updated maybeResult ->
+    UpdateProcessed role maybeNewName maybePreviousName maybeResult ->
       case maybeResult of
-        Just result ->
+        Just "ok" ->
           ({ model | isBeingUpdated = False }, Effects.none)
-        Nothing ->
+        _ ->
           ({ model
             | isBeingUpdated = False
-            , developerName = model.previousDeveloperName
-            , reviewerName = model.previousReviewerName
           }, Effects.none)
 
 -- VIEW
@@ -121,18 +107,19 @@ view address model teamMemberNames =
 
 -- EFFECTS
 
-effectUpdateIssue : Model -> Effects Action
-effectUpdateIssue model =
+effectUpdateIssue : String -> Role -> Maybe String -> Maybe String -> Effects Action
+effectUpdateIssue key role maybeNewName maybePreviousName =
   let
-    url_base = "/api/issues/" ++ model.key
+    url_base = "/api/issues/" ++ key
     url = Http.url url_base []
+    roleString = case role of
+      Developer -> "developer"
+      Reviewer -> "reviewer"
     body = Http.multipart
-      [ Http.stringData "developer" (Maybe.withDefault "" model.developerName)
-      , Http.stringData "reviewer" (Maybe.withDefault "" model.reviewerName)
-      ]
+      [ Http.stringData roleString (Maybe.withDefault "" maybeNewName) ]
   in
     -- Http.post : Decoder value -> String -> Body -> Task Error value
     Http.post Json.Decode.string url body
       |> Task.toMaybe
-      |> Task.map Updated
+      |> Task.map (UpdateProcessed role maybeNewName maybePreviousName)
       |> Effects.task
