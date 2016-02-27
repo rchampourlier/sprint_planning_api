@@ -2,7 +2,7 @@
 
 if [ -f .env ]
 then
-  env $(cat .env | xargs) elixir -S mix phoenix.server
+  env $(cat .env | xargs) iex -S mix phoenix.server
 else
-  elixir -S mix phoenix.server
+  iex -S mix phoenix.server
 fi
