@@ -13,13 +13,11 @@ h1 {
 .sprint-planning {
 }
 
+.sprint-selector .mui-textfield {
+  padding-top: 6px;
+}
+
 /* ISSUES */
-
-.issues-box {
-}
-
-.issues-bucket {
-}
 
 .issue-item {
 }

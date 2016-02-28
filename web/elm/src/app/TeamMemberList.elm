@@ -40,8 +40,7 @@ type Action
   = Add
   | Remove ID
   | Modify ID TeamMember.Action
-  -- | Drag ID
-
+  
 update : Action -> Model -> Model
 update action model =
   case action of
