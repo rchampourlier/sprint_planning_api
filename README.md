@@ -30,3 +30,11 @@ Create a `.env` file (copy `.env.example`) and fill the appropriate environment 
 - Deploy to Heroku (set the environment variables from `.env` and pushes to the `heroku` remote). This assumes you have an Heroku app setup for Phoenix (see [howto](http://www.phoenixframework.org/docs/heroku)).
 
 The application runs on [`localhost:4000`](http://localhost:4000) by default.
+
+### Deploy to Heroku
+
+```
+heroku create --buildpack "https://github.com/HashNuke/heroku-buildpack-elixir.git" <APP_NAME>
+heroku buildpacks:add https://github.com/gjaldon/heroku-buildpack-phoenix-static.git
+bin/deploy
+```
