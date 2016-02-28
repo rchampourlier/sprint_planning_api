@@ -13,8 +13,10 @@ use Mix.Config
 # which you typically run after static files are built.
 config :planning_tool, PlanningTool.Endpoint,
   http: [port: {:system, "PORT"}],
-  url: [host: "example.com", port: 80],
-  cache_static_manifest: "priv/static/manifest.json"
+  url: [scheme: "https", host: "sprint-planning-tool-jobteaser.herokuapp.com", port: 443],
+  force_ssl: [rewrite_on: [:x_forwarded_proto]],
+  cache_static_manifest: "priv/static/manifest.json",
+  secret_key_base: System.get_env("SECRET_KEY_BASE")
 
 # Config for /lib modules, use production variant.
 config :planning_tool, :jira_search_issues, PlanningTool.JIRA.SearchIssues.HTTPoison
@@ -64,4 +66,5 @@ config :logger, level: :info
 
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
-import_config "prod.secret.exs"
+# import_config "prod.secret.exs"
+# Not importing anymore, using environment variables instead
