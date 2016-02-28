@@ -26,4 +26,3 @@ erl_crash.dump
 
 # Elm artifacts
 /web/elm/elm-stuff/build-artifacts
-/web/static/vendor/main.js
