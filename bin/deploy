@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+env_file = File.expand_path('../../.env', __FILE__)
+if File.exist?(env_file)
+  envs = File.read(env_file)
+  envs.tr!("\n", ' ')
+  envs.gsub!('MIX_ENV=dev', 'MIX_ENV=prod')
+  envs.gsub!(/MONGODB_URI[^\s]+/, '')
+  envs.strip!
+
+  command = "heroku config:set #{envs}"
+  puts "[RUN] #{command}"
+  system command
+end
+
+command = 'git push heroku master:master'
+puts "[RUN] #{command}"
+system command
