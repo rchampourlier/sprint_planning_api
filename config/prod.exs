@@ -21,6 +21,7 @@ config :planning_tool, :jira_search_issues, PlanningTool.JIRA.SearchIssues.HTTPo
 config :planning_tool, :jira_fetch_issues, PlanningTool.JIRA.FetchIssues.HTTPoison
 config :planning_tool, :jira_fetch_issue, PlanningTool.JIRA.FetchIssue.HTTPoison
 config :planning_tool, :jira_update_issue, PlanningTool.JIRA.UpdateIssue.HTTPoison
+config :planning_tool, :jira_fetch_sprint_names, PlanningTool.JIRA.FetchSprintNames.HTTPoison
 
 # Do not print debug messages in production
 config :logger, level: :info

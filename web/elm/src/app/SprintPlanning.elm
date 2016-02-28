@@ -25,13 +25,14 @@ type alias ID = Int
 type alias Model =
   { issues : List Issue.Model
   , sprintName : Maybe String
+  , sprintNames : List String
   , teamMemberList : TeamMemberList.Model
   }
 
 init : (Model, Effects Action)
 init =
-  ( Model [] Nothing (TeamMemberList.init [])
-  , effectFetchIssues Nothing
+  ( Model [] Nothing [] (TeamMemberList.init [])
+  , effectFetchIssues "PROJECT = \"JT\""
   )
 
 getAssignments : List Issue.Model -> List String -> List (String, List (TeamMember.Role, Int))
@@ -75,16 +76,23 @@ getIssuesForStatus status model =
 
 type Action
   = UpdateSprintName String
-  | FetchIssues
+  | ReceivedSprintNames (Maybe (List String))
   | ReceivedIssues (Maybe (List Issue.Model))
   | ModifyIssue Issue.Model Issue.Action
   | ModifyTeamMembers TeamMemberList.Action
+
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
     UpdateSprintName name -> ({ model | sprintName = Just name }, Effects.none)
     FetchIssues -> ( model, effectFetchIssues model.sprintName )
+
+    ReceivedSprintNames maybeSprintNames ->
+      case maybeSprintNames of
+        Nothing -> ( model, Effects.none )
+        Just sprintNames ->
+          ({ model | sprintNames = sprintNames }, Effects.none)
 
     ReceivedIssues maybeIssues ->
       case maybeIssues of
@@ -218,6 +226,16 @@ viewTeamMembers address model =
 
 
 -- EFFECTS
+
+effectFetchSprintNames : Effects Action
+effectFetchSprintNames =
+  let
+    url = Http.url "/api/sprint_names" []
+  in
+    Http.get (Json.list Json.string) url
+      |> Task.toMaybe
+      |> Task.map ReceivedSprintNames
+      |> Effects.task
 
 effectFetchIssues : Maybe String -> Effects Action
 effectFetchIssues maybeSprintName =
