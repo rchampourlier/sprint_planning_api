@@ -2,8 +2,8 @@ defmodule PlanningTool.IssuesController do
   use PlanningTool.Web, :controller
 
   # GET index
-  def index(conn, _params) do
-    response = jira_fetch_issues()
+  def index(conn, params) do
+    response = issues(params["sprintName"])
       |> PlanningTool.IssueSerializer.to_map
     json conn, response
   end
@@ -18,8 +18,12 @@ defmodule PlanningTool.IssuesController do
     json conn, result |> Atom.to_string
   end
 
-  defp jira_fetch_issues do
+  defp issues(nil) do
     jira_search_issues_module.execute(:open_sprints)
+      |> jira_fetch_issues_module.execute
+  end
+  defp issues(sprintName) do
+    jira_search_issues_module.execute(sprintName)
       |> jira_fetch_issues_module.execute
   end
 

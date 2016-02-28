@@ -4,7 +4,8 @@ module SprintPlanning where
 import Effects exposing (Effects, Never)
 import Http
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, placeholder, style, type')
+import Html.Events exposing (on, onClick, targetValue)
 import Json.Decode exposing ((:=))
 import Json.Decode as Json
 import List
@@ -23,13 +24,14 @@ type IssueStatus = TODO | DONE
 type alias ID = Int
 type alias Model =
   { issues : List Issue.Model
+  , sprintName : Maybe String
   , teamMemberList : TeamMemberList.Model
   }
 
 init : (Model, Effects Action)
 init =
-  ( Model [] (TeamMemberList.init [])
-  , effectFetchIssues "PROJECT = \"JT\""
+  ( Model [] Nothing (TeamMemberList.init [])
+  , effectFetchIssues Nothing
   )
 
 getAssignments : List Issue.Model -> List String -> List (String, List (TeamMember.Role, Int))
@@ -72,13 +74,17 @@ getIssuesForStatus status model =
 -- UPDATE
 
 type Action
-  = ReceivedIssues (Maybe (List Issue.Model))
+  = UpdateSprintName String
+  | FetchIssues
+  | ReceivedIssues (Maybe (List Issue.Model))
   | ModifyIssue Issue.Model Issue.Action
   | ModifyTeamMembers TeamMemberList.Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
+    UpdateSprintName name -> ({ model | sprintName = Just name }, Effects.none)
+    FetchIssues -> ( model, effectFetchIssues model.sprintName )
 
     ReceivedIssues maybeIssues ->
       case maybeIssues of
@@ -146,8 +152,32 @@ view address model =
     teamMemberNames = TeamMemberList.getNames model.teamMemberList
   in
     div [ class "sprint-planning" ]
-      [ div [ class "issues-box mui-col-md-8" ]
-        [ h2 [] [ text "Issues - TODO" ]
+      [ div [ class "mui-col-md-8" ]
+        [ div [ class "mui-panel" ]
+          [ div [ class "sprint-selector" ]
+            [ legend [] [ text <| "Sprint" ]
+            , div [ class "mui-row" ]
+              [ div [ class "mui-col-md-6" ]
+                [ div [ class "mui-textfield" ]
+                  [ input
+                    [ type' "text"
+                    , placeholder "Enter a sprint name"
+                    -- on : String -> Json.Decoder a -> (a -> Signal.Message) -> Attribute
+                    -- message : Address a -> a -> Message
+                    , on "input" targetValue (\str -> Signal.message address (UpdateSprintName str))
+                    ]
+                    []
+                  ]
+                ]
+              , div [ class "mui-col-md-6" ]
+                [ button
+                  [ class "mui-btn mui-btn--primary", onClick address FetchIssues ]
+                  [ text "Fetch sprint's issues" ]
+                ]
+              ]
+            ]
+          ]
+        , h2 [] [ text "Issues - TODO" ]
         , div
           [ class "mui-panel" ]
           [ div [] [ viewIssues address issuesTodo teamMemberNames ] ]
@@ -189,11 +219,13 @@ viewTeamMembers address model =
 
 -- EFFECTS
 
-effectFetchIssues : String -> Effects Action
-effectFetchIssues jqlQuery =
+effectFetchIssues : Maybe String -> Effects Action
+effectFetchIssues maybeSprintName =
   let
     url_base = "/api/issues"
-    url = Http.url url_base [ ]
+    url = case maybeSprintName of
+      Nothing -> Http.url url_base [ ]
+      Just name -> Http.url url_base [ ("sprintName", name) ]
   in
     Http.get (Json.list decodeIssue) url
       |> Task.toMaybe

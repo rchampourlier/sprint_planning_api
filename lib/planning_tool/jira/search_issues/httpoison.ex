@@ -4,7 +4,15 @@ defmodule PlanningTool.JIRA.SearchIssues.HTTPoison do
   @behaviour PlanningTool.JIRA.SearchIssues
 
   def execute(:open_sprints) do
-    get!("/search?jql=Sprint+in+openSprints()&fields=id")
+    jql = "SPRINT in openSprints()"
+    params = [ {:jql, jql}, {:fields, "id"} ]
+    get!("/search", [], [params: params])
+      |> Map.get :body
+  end
+  def execute(sprintName) do
+    jql = "SPRINT = \"" <> sprintName <> "\""
+    params = [ {:jql, jql}, {:fields, "id"} ]
+    get!("/search", [], [params: params])
       |> Map.get :body
   end
 
