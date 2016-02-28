@@ -2,6 +2,8 @@
 
 A _sur-mesure_ tool to help with sprint issues assignment to team members.
 
+![](doc/readme_screenshot.png)
+
 ## What does it do?
 
 - Displays a list of the issues in the currently open sprints (by default), or a sprint you specified by name.
