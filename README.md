@@ -38,3 +38,5 @@ heroku create --buildpack "https://github.com/HashNuke/heroku-buildpack-elixir.g
 heroku buildpacks:add https://github.com/gjaldon/heroku-buildpack-phoenix-static.git
 bin/deploy
 ```
+
+NB: Compiling Elm on Heroku would require some adjustments to the buildpack, so instead, we will compile Elm to JS (into `web/static/vendor/main.js`) and leave Brunch to the rest. The compilation of Elm fails during the deployment but it does not harm. This is why we need this file versioned.
