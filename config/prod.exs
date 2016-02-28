@@ -16,9 +16,11 @@ config :planning_tool, PlanningTool.Endpoint,
   url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/manifest.json"
 
-config :planning_tool,
-  :jira_search_issues, PlanningTool.JIRA.SearchIssues.InMemory
-
+# Config for /lib modules, use production variant.
+config :planning_tool, :jira_search_issues, PlanningTool.JIRA.SearchIssues.HTTPoison
+config :planning_tool, :jira_fetch_issues, PlanningTool.JIRA.FetchIssues.HTTPoison
+config :planning_tool, :jira_fetch_issue, PlanningTool.JIRA.FetchIssue.HTTPoison
+config :planning_tool, :jira_update_issue, PlanningTool.JIRA.UpdateIssue.HTTPoison
 
 # Do not print debug messages in production
 config :logger, level: :info
