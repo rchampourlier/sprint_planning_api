@@ -38,6 +38,11 @@ h1 {
   width: 100%;
 }
 
+.team-members-list__buttons .mui-btn {
+  display: block;
+  margin-left: 0;
+}
+
 .team-members-list__item {
   font-size: 1.1em;
 }

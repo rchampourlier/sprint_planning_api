@@ -11678,111 +11678,137 @@ Elm.TeamMemberList.make = function (_elm) {
       },
       model.teamMembers)});
    });
+   var HideUsersWithZeroCapacity = {ctor: "HideUsersWithZeroCapacity"};
+   var ShowUsersWithZeroCapacity = {ctor: "ShowUsersWithZeroCapacity"};
+   var viewButtonToggleShowingTeamMembersWithZeroCapacity = F2(function (address,model) {
+      var buildButton = F2(function (action,str) {
+         return A2($Html.button,
+         _U.list([$Html$Attributes.$class("mui-btn mui-btn--small"),A2($Html$Events.onClick,address,action)]),
+         _U.list([$Html.text(str)]));
+      });
+      var _p5 = model.isShowingUsersWithZeroCapacity;
+      if (_p5 === true) {
+            return A2(buildButton,HideUsersWithZeroCapacity,"Hide users with no capacity");
+         } else {
+            return A2(buildButton,ShowUsersWithZeroCapacity,"Show all users");
+         }
+   });
    var DisableCapacityEdition = {ctor: "DisableCapacityEdition"};
    var EnableCapacityEdition = {ctor: "EnableCapacityEdition"};
+   var viewButtonToggleCapacityEdition = F2(function (address,model) {
+      var buildButton = F2(function (action,str) {
+         return A2($Html.button,
+         _U.list([$Html$Attributes.$class("mui-btn mui-btn--small"),A2($Html$Events.onClick,address,action)]),
+         _U.list([$Html.text(str)]));
+      });
+      var _p6 = model.capacityEditionEnabled;
+      if (_p6 === true) {
+            return A2(buildButton,DisableCapacityEdition,"Done editing capacities");
+         } else {
+            return A2(buildButton,EnableCapacityEdition,"Edit capacities");
+         }
+   });
    var Modify = F2(function (a,b) {    return {ctor: "Modify",_0: a,_1: b};});
-   var viewTeamMember = F3(function (address,maxCapacity,_p5) {
-      var _p6 = _p5;
-      var _p7 = _p6._1;
-      var capacity = $Basics.toFloat($TeamMember.getCapacity(_p7));
-      var assigned = $TeamMember.getAssigned(_p7);
+   var viewTeamMember = F3(function (address,maxCapacity,_p7) {
+      var _p8 = _p7;
+      var _p9 = _p8._1;
+      var capacity = $Basics.toFloat($TeamMember.getCapacity(_p9));
+      var assigned = $TeamMember.getAssigned(_p9);
       var remainingRatio = (capacity - assigned) / capacity;
-      return _U.list([A2($TeamMember.view,A2($Signal.forwardTo,address,Modify(_p6._0)),_p7),$ProgressBar.view(remainingRatio)]);
+      return _U.list([A2($TeamMember.view,A2($Signal.forwardTo,address,Modify(_p8._0)),_p9),$ProgressBar.view(remainingRatio)]);
    });
    var Add = {ctor: "Add"};
    var getMaxCapacity = function (model) {
-      return A2($Maybe.withDefault,0,$List.maximum(A2($List.map,function (_p8) {    var _p9 = _p8;return $TeamMember.getCapacity(_p9._1);},model.teamMembers)));
+      return A2($Maybe.withDefault,
+      0,
+      $List.maximum(A2($List.map,function (_p10) {    var _p11 = _p10;return $TeamMember.getCapacity(_p11._1);},model.teamMembers)));
    };
    var view = F2(function (address,model) {
-      var buttonToggleCapacityEditionText = function () {
-         var _p10 = model.capacityEditionEnabled;
-         if (_p10 === true) {
-               return "Done";
+      var showedTeamMembers = function () {
+         var _p12 = model.isShowingUsersWithZeroCapacity;
+         if (_p12 === true) {
+               return model.teamMembers;
             } else {
-               return "Edit capacities";
+               return A2($List.filter,function (_p13) {    var _p14 = _p13;return _U.cmp($TeamMember.getCapacity(_p14._1),0) > 0;},model.teamMembers);
             }
       }();
-      var buttonToggleCapacityEditionAction = function () {
-         var _p11 = model.capacityEditionEnabled;
-         if (_p11 === true) {
-               return DisableCapacityEdition;
-            } else {
-               return EnableCapacityEdition;
-            }
-      }();
-      var viewButtonToggleCapacityEdition = A2($Html.button,
-      _U.list([$Html$Attributes.$class("mui-btn"),A2($Html$Events.onClick,address,buttonToggleCapacityEditionAction)]),
-      _U.list([$Html.text(buttonToggleCapacityEditionText)]));
       var viewButtonAdd = A2($Html.button,
       _U.list([$Html$Attributes.$class("mui-btn mui-btn--primary"),A2($Html$Events.onClick,address,Add)]),
-      _U.list([$Html.text("Add")]));
+      _U.list([$Html.text("Add team member")]));
       var maxCapacity = $Basics.toFloat(getMaxCapacity(model));
-      var viewList = A2($List.concatMap,A2(viewTeamMember,address,maxCapacity),model.teamMembers);
+      var viewList = A2($List.concatMap,A2(viewTeamMember,address,maxCapacity),showedTeamMembers);
       return A2($Html.div,
       _U.list([]),
-      _U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),viewList),viewButtonAdd,viewButtonToggleCapacityEdition]));
+      _U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),viewList)
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("team-members-list__buttons")]),
+              _U.list([viewButtonAdd
+                      ,A2(viewButtonToggleCapacityEdition,address,model)
+                      ,A2(viewButtonToggleShowingTeamMembersWithZeroCapacity,address,model)]))]));
    });
    var getTeamMemberNames = function (model) {
       return A2($List.map,
       function (tm) {
          return $TeamMember.getName(tm);
       },
-      A2($List.map,function (_p12) {    var _p13 = _p12;return _p13._1;},model.teamMembers));
+      A2($List.map,function (_p15) {    var _p16 = _p15;return _p16._1;},model.teamMembers));
    };
    var updateAddTeamMemberWithName = F2(function (model,name) {
-      var _p14 = A2($List.member,name,getTeamMemberNames(model));
-      if (_p14 === true) {
+      var _p17 = A2($List.member,name,getTeamMemberNames(model));
+      if (_p17 === true) {
             return model;
          } else {
             return _U.update(model,{teamMembers: A2($IndexedList.append,model.teamMembers,A2($TeamMember.init,name,0))});
          }
    });
    var update = F2(function (action,model) {
-      var _p15 = action;
-      switch (_p15.ctor)
+      var _p18 = action;
+      switch (_p18.ctor)
       {case "Add": return A2(updateAddTeamMemberWithName,model,"Unknown");
-         case "Modify": var updateTeamMember = function (_p16) {
-              var _p17 = _p16;
-              var _p19 = _p17._1;
-              var _p18 = _p17._0;
-              return _U.eq(_p18,_p15._0) ? {ctor: "_Tuple2",_0: _p18,_1: A2($TeamMember.update,_p15._1,_p19)} : {ctor: "_Tuple2",_0: _p18,_1: _p19};
+         case "Modify": var updateTeamMember = function (_p19) {
+              var _p20 = _p19;
+              var _p22 = _p20._1;
+              var _p21 = _p20._0;
+              return _U.eq(_p21,_p18._0) ? {ctor: "_Tuple2",_0: _p21,_1: A2($TeamMember.update,_p18._1,_p22)} : {ctor: "_Tuple2",_0: _p21,_1: _p22};
            };
            return _U.update(model,{teamMembers: A2($List.map,updateTeamMember,model.teamMembers)});
          case "EnableCapacityEdition": return _U.update(model,
            {teamMembers: A2($List.map,
-           function (_p20) {
-              var _p21 = _p20;
-              return {ctor: "_Tuple2",_0: _p21._0,_1: $TeamMember.updateEnableCapacityEdition(_p21._1)};
+           function (_p23) {
+              var _p24 = _p23;
+              return {ctor: "_Tuple2",_0: _p24._0,_1: $TeamMember.updateEnableCapacityEdition(_p24._1)};
            },
            model.teamMembers)
            ,capacityEditionEnabled: true});
-         default: return _U.update(model,
+         case "DisableCapacityEdition": return _U.update(model,
            {teamMembers: A2($List.map,
-           function (_p22) {
-              var _p23 = _p22;
-              return {ctor: "_Tuple2",_0: _p23._0,_1: $TeamMember.updateDisableCapacityEdition(_p23._1)};
+           function (_p25) {
+              var _p26 = _p25;
+              return {ctor: "_Tuple2",_0: _p26._0,_1: $TeamMember.updateDisableCapacityEdition(_p26._1)};
            },
            model.teamMembers)
-           ,capacityEditionEnabled: false});}
+           ,capacityEditionEnabled: false});
+         case "ShowUsersWithZeroCapacity": return _U.update(model,{isShowingUsersWithZeroCapacity: true});
+         default: return _U.update(model,{isShowingUsersWithZeroCapacity: false});}
    });
    var updateAddTeamMemberWithNames = F2(function (names,model) {
       updateAddTeamMemberWithNames: while (true) {
-         var _p24 = names;
-         if (_p24.ctor === "[]") {
+         var _p27 = names;
+         if (_p27.ctor === "[]") {
                return model;
             } else {
-               var _v14 = _p24._1,_v15 = A2(updateAddTeamMemberWithName,model,_p24._0);
-               names = _v14;
-               model = _v15;
+               var _v16 = _p27._1,_v17 = A2(updateAddTeamMemberWithName,model,_p27._0);
+               names = _v16;
+               model = _v17;
                continue updateAddTeamMemberWithNames;
             }
       }
    });
    var init = function (names) {
       var teamMembers = A2($ListFunctions.indexList,0,A2($List.map,function (name) {    return A2($TeamMember.init,name,0);},names));
-      return {teamMembers: teamMembers,capacityEditionEnabled: false};
+      return {teamMembers: teamMembers,capacityEditionEnabled: false,isShowingUsersWithZeroCapacity: true};
    };
-   var Model = F2(function (a,b) {    return {teamMembers: a,capacityEditionEnabled: b};});
+   var Model = F3(function (a,b,c) {    return {teamMembers: a,capacityEditionEnabled: b,isShowingUsersWithZeroCapacity: c};});
    return _elm.TeamMemberList.values = {_op: _op
                                        ,Model: Model
                                        ,init: init
@@ -11792,11 +11818,15 @@ Elm.TeamMemberList.make = function (_elm) {
                                        ,Modify: Modify
                                        ,EnableCapacityEdition: EnableCapacityEdition
                                        ,DisableCapacityEdition: DisableCapacityEdition
+                                       ,ShowUsersWithZeroCapacity: ShowUsersWithZeroCapacity
+                                       ,HideUsersWithZeroCapacity: HideUsersWithZeroCapacity
                                        ,update: update
                                        ,updateAssignments: updateAssignments
                                        ,updateAddTeamMemberWithName: updateAddTeamMemberWithName
                                        ,updateAddTeamMemberWithNames: updateAddTeamMemberWithNames
                                        ,view: view
+                                       ,viewButtonToggleCapacityEdition: viewButtonToggleCapacityEdition
+                                       ,viewButtonToggleShowingTeamMembersWithZeroCapacity: viewButtonToggleShowingTeamMembersWithZeroCapacity
                                        ,viewTeamMember: viewTeamMember};
 };
 Elm.SprintPlanning = Elm.SprintPlanning || {};

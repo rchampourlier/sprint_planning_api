@@ -17,6 +17,7 @@ type alias ID = Int
 type alias Model =
   { teamMembers : List (ID, TeamMember.Model)
   , capacityEditionEnabled : Bool
+  , isShowingUsersWithZeroCapacity : Bool
   }
 
 init : List String -> Model
@@ -27,6 +28,7 @@ init names =
   in
     { teamMembers = teamMembers
     , capacityEditionEnabled = False
+    , isShowingUsersWithZeroCapacity = True
     }
 
 getTeamMemberNames : Model -> List String
@@ -49,6 +51,8 @@ type Action
   | Modify ID TeamMember.Action
   | EnableCapacityEdition
   | DisableCapacityEdition
+  | ShowUsersWithZeroCapacity
+  | HideUsersWithZeroCapacity
 
 update : Action -> Model -> Model
 update action model =
@@ -74,6 +78,10 @@ update action model =
         | teamMembers = List.map (\(id, tm) -> (id, TeamMember.updateDisableCapacityEdition tm)) model.teamMembers
         , capacityEditionEnabled = False
       }
+    ShowUsersWithZeroCapacity ->
+      { model | isShowingUsersWithZeroCapacity = True }
+    HideUsersWithZeroCapacity ->
+      { model | isShowingUsersWithZeroCapacity = False }
 
 updateAssignments : List (String, List TeamMember.Assignment) -> Model -> Model
 updateAssignments namedAssignmentsList model =
@@ -117,23 +125,42 @@ view address model =
     maxCapacity = toFloat <| getMaxCapacity model
     viewButtonAdd = button
       [ class "mui-btn mui-btn--primary", onClick address Add ]
-      [ text "Add" ]
-    buttonToggleCapacityEditionAction = case model.capacityEditionEnabled of
-      True -> DisableCapacityEdition
-      False -> EnableCapacityEdition
-    buttonToggleCapacityEditionText = case model.capacityEditionEnabled of
-      True -> "Done"
-      False -> "Edit capacities"
-    viewButtonToggleCapacityEdition = button
-      [ class "mui-btn", onClick address buttonToggleCapacityEditionAction ]
-      [ text buttonToggleCapacityEditionText ]
-    viewList = List.concatMap (viewTeamMember address maxCapacity) model.teamMembers
+      [ text "Add team member" ]
+    showedTeamMembers = case model.isShowingUsersWithZeroCapacity of
+      True  -> model.teamMembers
+      False -> List.filter (\(_, tm) -> TeamMember.getCapacity tm > 0) model.teamMembers
+    viewList = List.concatMap (viewTeamMember address maxCapacity) showedTeamMembers
   in
     div []
       [ table [ class "team-members-list" ] viewList
-      , viewButtonAdd
-      , viewButtonToggleCapacityEdition
+      , div [ class "team-members-list__buttons" ]
+        [ viewButtonAdd
+        , viewButtonToggleCapacityEdition address model
+        , viewButtonToggleShowingTeamMembersWithZeroCapacity address model
+        ]
       ]
+
+viewButtonToggleCapacityEdition : Signal.Address Action -> Model -> Html
+viewButtonToggleCapacityEdition address model =
+  let
+    buildButton action str = button
+      [ class "mui-btn mui-btn--small", onClick address action ]
+      [ text str ]
+  in
+    case model.capacityEditionEnabled of
+      True  -> buildButton DisableCapacityEdition "Done editing capacities"
+      False -> buildButton EnableCapacityEdition "Edit capacities"
+
+viewButtonToggleShowingTeamMembersWithZeroCapacity : Signal.Address Action -> Model -> Html
+viewButtonToggleShowingTeamMembersWithZeroCapacity address model =
+  let
+    buildButton action str = button
+      [ class "mui-btn mui-btn--small", onClick address action ]
+      [ text str ]
+  in
+    case model.isShowingUsersWithZeroCapacity of
+      True  -> buildButton HideUsersWithZeroCapacity "Hide users with no capacity"
+      False -> buildButton ShowUsersWithZeroCapacity "Show all users"
 
 viewTeamMember : Signal.Address Action -> Float -> (ID, TeamMember.Model) -> List Html
 viewTeamMember address maxCapacity (id, tm) =
