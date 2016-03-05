@@ -13,16 +13,16 @@ import MathUtils exposing (floatRound)
 type Role = Developer | Reviewer
 type alias Assignment = (Role, Int)
 type alias Model =
-  { capacity : IntegerInput.Model
-  , name : StringInput.Model
+  { capacityInput : IntegerInput.Model
+  , nameInput : StringInput.Model
   , assignmentDeveloper : Int
   , assignmentReviewer : Int
   }
 
 init : String -> Int -> Model
 init name capacity =
-  { capacity = IntegerInput.init capacity
-  , name = StringInput.init name
+  { capacityInput = IntegerInput.init capacity
+  , nameInput = StringInput.init name
   , assignmentDeveloper = 0
   , assignmentReviewer = 0
   }
@@ -33,11 +33,11 @@ getAssigned model =
 
 getCapacity : Model -> Int
 getCapacity model =
-  IntegerInput.getValue model.capacity
+  IntegerInput.getValue model.capacityInput
 
 getName : Model -> String
 getName model =
-  StringInput.getValue model.name
+  StringInput.getValue model.nameInput
 
 
 -- UPDATE
@@ -50,9 +50,9 @@ update : Action -> Model -> Model
 update action model =
   case action of
     ModifyCapacity integerInputAction ->
-      { model | capacity = IntegerInput.update integerInputAction model.capacity }
+      { model | capacityInput = IntegerInput.update integerInputAction model.capacityInput }
     ModifyName stringInputAction ->
-      { model | name = StringInput.update stringInputAction model.name }
+      { model | nameInput = StringInput.update stringInputAction model.nameInput }
 
 updateAssignments : Model -> List Assignment -> Model
 updateAssignments model roleAssignments =
@@ -72,14 +72,22 @@ updateAssignmentsReset model =
     , assignmentReviewer = 0
   }
 
+updateEnableCapacityEdition : Model -> Model
+updateEnableCapacityEdition model =
+  { model | capacityInput = IntegerInput.update IntegerInput.EnterEdit model.capacityInput }
+
+updateDisableCapacityEdition : Model -> Model
+updateDisableCapacityEdition model =
+  { model | capacityInput = IntegerInput.update IntegerInput.LeaveEdit model.capacityInput }
+
 -- VIEW
 
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
     assigned = floatRound (getAssigned model) 1
-    viewNameInput = StringInput.view (Signal.forwardTo address ModifyName) model.name
-    viewCapacityInput = IntegerInput.view (Signal.forwardTo address ModifyCapacity) model.capacity
+    viewNameInput = StringInput.view (Signal.forwardTo address ModifyName) model.nameInput
+    viewCapacityInput = IntegerInput.view (Signal.forwardTo address ModifyCapacity) model.capacityInput
     viewAssigned = span [] [ text (toString assigned) ]
   in
     tr [ class "team-members-list__item" ]

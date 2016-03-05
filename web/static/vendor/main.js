@@ -11530,6 +11530,12 @@ Elm.TeamMember.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StringInput = Elm.StringInput.make(_elm);
    var _op = {};
+   var updateDisableCapacityEdition = function (model) {
+      return _U.update(model,{capacityInput: A2($IntegerInput.update,$IntegerInput.LeaveEdit,model.capacityInput)});
+   };
+   var updateEnableCapacityEdition = function (model) {
+      return _U.update(model,{capacityInput: A2($IntegerInput.update,$IntegerInput.EnterEdit,model.capacityInput)});
+   };
    var updateAssignmentsReset = function (model) {    return _U.update(model,{assignmentDeveloper: 0,assignmentReviewer: 0});};
    var updateAssignments = F2(function (model,roleAssignments) {
       var applyAssignment = F2(function (_p0,model) {
@@ -11547,19 +11553,19 @@ Elm.TeamMember.make = function (_elm) {
    var update = F2(function (action,model) {
       var _p4 = action;
       if (_p4.ctor === "ModifyCapacity") {
-            return _U.update(model,{capacity: A2($IntegerInput.update,_p4._0,model.capacity)});
+            return _U.update(model,{capacityInput: A2($IntegerInput.update,_p4._0,model.capacityInput)});
          } else {
-            return _U.update(model,{name: A2($StringInput.update,_p4._0,model.name)});
+            return _U.update(model,{nameInput: A2($StringInput.update,_p4._0,model.nameInput)});
          }
    });
    var ModifyName = function (a) {    return {ctor: "ModifyName",_0: a};};
    var ModifyCapacity = function (a) {    return {ctor: "ModifyCapacity",_0: a};};
-   var getName = function (model) {    return $StringInput.getValue(model.name);};
-   var getCapacity = function (model) {    return $IntegerInput.getValue(model.capacity);};
+   var getName = function (model) {    return $StringInput.getValue(model.nameInput);};
+   var getCapacity = function (model) {    return $IntegerInput.getValue(model.capacityInput);};
    var getAssigned = function (model) {    return $Basics.toFloat(model.assignmentDeveloper);};
    var view = F2(function (address,model) {
-      var viewCapacityInput = A2($IntegerInput.view,A2($Signal.forwardTo,address,ModifyCapacity),model.capacity);
-      var viewNameInput = A2($StringInput.view,A2($Signal.forwardTo,address,ModifyName),model.name);
+      var viewCapacityInput = A2($IntegerInput.view,A2($Signal.forwardTo,address,ModifyCapacity),model.capacityInput);
+      var viewNameInput = A2($StringInput.view,A2($Signal.forwardTo,address,ModifyName),model.nameInput);
       var assigned = A2($MathUtils.floatRound,getAssigned(model),1);
       var viewAssigned = A2($Html.span,_U.list([]),_U.list([$Html.text($Basics.toString(assigned))]));
       return A2($Html.tr,
@@ -11575,9 +11581,9 @@ Elm.TeamMember.make = function (_elm) {
               _U.list([viewAssigned]))]));
    });
    var init = F2(function (name,capacity) {
-      return {capacity: $IntegerInput.init(capacity),name: $StringInput.init(name),assignmentDeveloper: 0,assignmentReviewer: 0};
+      return {capacityInput: $IntegerInput.init(capacity),nameInput: $StringInput.init(name),assignmentDeveloper: 0,assignmentReviewer: 0};
    });
-   var Model = F4(function (a,b,c,d) {    return {capacity: a,name: b,assignmentDeveloper: c,assignmentReviewer: d};});
+   var Model = F4(function (a,b,c,d) {    return {capacityInput: a,nameInput: b,assignmentDeveloper: c,assignmentReviewer: d};});
    var Reviewer = {ctor: "Reviewer"};
    var Developer = {ctor: "Developer"};
    return _elm.TeamMember.values = {_op: _op
@@ -11593,6 +11599,8 @@ Elm.TeamMember.make = function (_elm) {
                                    ,update: update
                                    ,updateAssignments: updateAssignments
                                    ,updateAssignmentsReset: updateAssignmentsReset
+                                   ,updateEnableCapacityEdition: updateEnableCapacityEdition
+                                   ,updateDisableCapacityEdition: updateDisableCapacityEdition
                                    ,view: view};
 };
 Elm.ProgressBar = Elm.ProgressBar || {};
@@ -11662,8 +11670,16 @@ Elm.TeamMemberList.make = function (_elm) {
                return A2($TeamMember.updateAssignments,teamMemberModel,_p2._0._1);
             }
       };
-      return A2($List.map,function (_p3) {    var _p4 = _p3;return {ctor: "_Tuple2",_0: _p4._0,_1: applyNamedAssignmentsList(_p4._1)};},model);
+      return _U.update(model,
+      {teamMembers: A2($List.map,
+      function (_p3) {
+         var _p4 = _p3;
+         return {ctor: "_Tuple2",_0: _p4._0,_1: applyNamedAssignmentsList(_p4._1)};
+      },
+      model.teamMembers)});
    });
+   var DisableCapacityEdition = {ctor: "DisableCapacityEdition"};
+   var EnableCapacityEdition = {ctor: "EnableCapacityEdition"};
    var Modify = F2(function (a,b) {    return {ctor: "Modify",_0: a,_1: b};});
    var viewTeamMember = F3(function (address,maxCapacity,_p5) {
       var _p6 = _p5;
@@ -11673,71 +11689,114 @@ Elm.TeamMemberList.make = function (_elm) {
       var remainingRatio = (capacity - assigned) / capacity;
       return _U.list([A2($TeamMember.view,A2($Signal.forwardTo,address,Modify(_p6._0)),_p7),$ProgressBar.view(remainingRatio)]);
    });
-   var viewTeamMemberList = F3(function (address,model,maxCapacity) {    return A2($List.concatMap,A2(viewTeamMember,address,maxCapacity),model);});
-   var Remove = function (a) {    return {ctor: "Remove",_0: a};};
    var Add = {ctor: "Add"};
    var getMaxCapacity = function (model) {
-      return A2($Maybe.withDefault,0,$List.maximum(A2($List.map,function (_p8) {    var _p9 = _p8;return $TeamMember.getCapacity(_p9._1);},model)));
+      return A2($Maybe.withDefault,0,$List.maximum(A2($List.map,function (_p8) {    var _p9 = _p8;return $TeamMember.getCapacity(_p9._1);},model.teamMembers)));
    };
    var view = F2(function (address,model) {
+      var buttonToggleCapacityEditionText = function () {
+         var _p10 = model.capacityEditionEnabled;
+         if (_p10 === true) {
+               return "Done";
+            } else {
+               return "Edit capacities";
+            }
+      }();
+      var buttonToggleCapacityEditionAction = function () {
+         var _p11 = model.capacityEditionEnabled;
+         if (_p11 === true) {
+               return DisableCapacityEdition;
+            } else {
+               return EnableCapacityEdition;
+            }
+      }();
+      var viewButtonToggleCapacityEdition = A2($Html.button,
+      _U.list([$Html$Attributes.$class("mui-btn"),A2($Html$Events.onClick,address,buttonToggleCapacityEditionAction)]),
+      _U.list([$Html.text(buttonToggleCapacityEditionText)]));
       var viewButtonAdd = A2($Html.button,
       _U.list([$Html$Attributes.$class("mui-btn mui-btn--primary"),A2($Html$Events.onClick,address,Add)]),
       _U.list([$Html.text("Add")]));
       var maxCapacity = $Basics.toFloat(getMaxCapacity(model));
-      var viewList = A3(viewTeamMemberList,address,model,maxCapacity);
-      return A2($Html.div,_U.list([]),_U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),viewList),viewButtonAdd]));
+      var viewList = A2($List.concatMap,A2(viewTeamMember,address,maxCapacity),model.teamMembers);
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),viewList),viewButtonAdd,viewButtonToggleCapacityEdition]));
    });
-   var getNames = function (model) {
-      return A2($List.map,function (tm) {    return $TeamMember.getName(tm);},A2($List.map,function (_p10) {    var _p11 = _p10;return _p11._1;},model));
+   var getTeamMemberNames = function (model) {
+      return A2($List.map,
+      function (tm) {
+         return $TeamMember.getName(tm);
+      },
+      A2($List.map,function (_p12) {    var _p13 = _p12;return _p13._1;},model.teamMembers));
    };
    var updateAddTeamMemberWithName = F2(function (model,name) {
-      var _p12 = A2($List.member,name,getNames(model));
-      if (_p12 === true) {
+      var _p14 = A2($List.member,name,getTeamMemberNames(model));
+      if (_p14 === true) {
             return model;
          } else {
-            return A2($IndexedList.append,model,A2($TeamMember.init,name,0));
+            return _U.update(model,{teamMembers: A2($IndexedList.append,model.teamMembers,A2($TeamMember.init,name,0))});
          }
    });
    var update = F2(function (action,model) {
-      var _p13 = action;
-      switch (_p13.ctor)
+      var _p15 = action;
+      switch (_p15.ctor)
       {case "Add": return A2(updateAddTeamMemberWithName,model,"Unknown");
-         case "Remove": return model;
-         default: var updateTeamMember = function (_p14) {
-              var _p15 = _p14;
-              var _p17 = _p15._1;
-              var _p16 = _p15._0;
-              return _U.eq(_p16,_p13._0) ? {ctor: "_Tuple2",_0: _p16,_1: A2($TeamMember.update,_p13._1,_p17)} : {ctor: "_Tuple2",_0: _p16,_1: _p17};
+         case "Modify": var updateTeamMember = function (_p16) {
+              var _p17 = _p16;
+              var _p19 = _p17._1;
+              var _p18 = _p17._0;
+              return _U.eq(_p18,_p15._0) ? {ctor: "_Tuple2",_0: _p18,_1: A2($TeamMember.update,_p15._1,_p19)} : {ctor: "_Tuple2",_0: _p18,_1: _p19};
            };
-           return A2($List.map,updateTeamMember,model);}
+           return _U.update(model,{teamMembers: A2($List.map,updateTeamMember,model.teamMembers)});
+         case "EnableCapacityEdition": return _U.update(model,
+           {teamMembers: A2($List.map,
+           function (_p20) {
+              var _p21 = _p20;
+              return {ctor: "_Tuple2",_0: _p21._0,_1: $TeamMember.updateEnableCapacityEdition(_p21._1)};
+           },
+           model.teamMembers)
+           ,capacityEditionEnabled: true});
+         default: return _U.update(model,
+           {teamMembers: A2($List.map,
+           function (_p22) {
+              var _p23 = _p22;
+              return {ctor: "_Tuple2",_0: _p23._0,_1: $TeamMember.updateDisableCapacityEdition(_p23._1)};
+           },
+           model.teamMembers)
+           ,capacityEditionEnabled: false});}
    });
    var updateAddTeamMemberWithNames = F2(function (names,model) {
       updateAddTeamMemberWithNames: while (true) {
-         var _p18 = names;
-         if (_p18.ctor === "[]") {
+         var _p24 = names;
+         if (_p24.ctor === "[]") {
                return model;
             } else {
-               var _v10 = _p18._1,_v11 = A2(updateAddTeamMemberWithName,model,_p18._0);
-               names = _v10;
-               model = _v11;
+               var _v14 = _p24._1,_v15 = A2(updateAddTeamMemberWithName,model,_p24._0);
+               names = _v14;
+               model = _v15;
                continue updateAddTeamMemberWithNames;
             }
       }
    });
-   var init = function (names) {    return A2($ListFunctions.indexList,0,A2($List.map,function (name) {    return A2($TeamMember.init,name,0);},names));};
+   var init = function (names) {
+      var teamMembers = A2($ListFunctions.indexList,0,A2($List.map,function (name) {    return A2($TeamMember.init,name,0);},names));
+      return {teamMembers: teamMembers,capacityEditionEnabled: false};
+   };
+   var Model = F2(function (a,b) {    return {teamMembers: a,capacityEditionEnabled: b};});
    return _elm.TeamMemberList.values = {_op: _op
+                                       ,Model: Model
                                        ,init: init
-                                       ,getNames: getNames
+                                       ,getTeamMemberNames: getTeamMemberNames
                                        ,getMaxCapacity: getMaxCapacity
                                        ,Add: Add
-                                       ,Remove: Remove
                                        ,Modify: Modify
+                                       ,EnableCapacityEdition: EnableCapacityEdition
+                                       ,DisableCapacityEdition: DisableCapacityEdition
                                        ,update: update
                                        ,updateAssignments: updateAssignments
                                        ,updateAddTeamMemberWithName: updateAddTeamMemberWithName
                                        ,updateAddTeamMemberWithNames: updateAddTeamMemberWithNames
                                        ,view: view
-                                       ,viewTeamMemberList: viewTeamMemberList
                                        ,viewTeamMember: viewTeamMember};
 };
 Elm.SprintPlanning = Elm.SprintPlanning || {};
@@ -11772,9 +11831,9 @@ Elm.SprintPlanning.make = function (_elm) {
    $Json$Decode.oneOf(_U.list([A2($Json$Decode._op[":="],"estimate",$Json$Decode.$int),$Json$Decode.succeed(0)])),
    $Json$Decode.maybe(A2($Json$Decode._op[":="],"developer",$Json$Decode.string)),
    $Json$Decode.maybe(A2($Json$Decode._op[":="],"reviewer",$Json$Decode.string)));
-   var ModifyTeamMembers = function (a) {    return {ctor: "ModifyTeamMembers",_0: a};};
+   var ModifyTeamMemberList = function (a) {    return {ctor: "ModifyTeamMemberList",_0: a};};
    var viewTeamMembers = F2(function (address,model) {
-      return A2($TeamMemberList.view,A2($Signal.forwardTo,address,ModifyTeamMembers),model.teamMemberList);
+      return A2($TeamMemberList.view,A2($Signal.forwardTo,address,ModifyTeamMemberList),model.teamMemberList);
    });
    var ModifyIssue = F2(function (a,b) {    return {ctor: "ModifyIssue",_0: a,_1: b};});
    var viewIssues = F3(function (address,issues,teamMemberNames) {
@@ -11888,7 +11947,7 @@ Elm.SprintPlanning.make = function (_elm) {
    var DONE = {ctor: "DONE"};
    var TODO = {ctor: "TODO"};
    var view = F2(function (address,model) {
-      var teamMemberNames = $TeamMemberList.getNames(model.teamMemberList);
+      var teamMemberNames = $TeamMemberList.getTeamMemberNames(model.teamMemberList);
       var issuesDone = A2(getIssuesForStatus,DONE,model);
       var issuesTodo = A2(getIssuesForStatus,TODO,model);
       return A2($Html.div,
@@ -11948,7 +12007,7 @@ Elm.SprintPlanning.make = function (_elm) {
                                        ,FetchIssues: FetchIssues
                                        ,ReceivedIssues: ReceivedIssues
                                        ,ModifyIssue: ModifyIssue
-                                       ,ModifyTeamMembers: ModifyTeamMembers
+                                       ,ModifyTeamMemberList: ModifyTeamMemberList
                                        ,update: update
                                        ,view: view
                                        ,viewIssues: viewIssues

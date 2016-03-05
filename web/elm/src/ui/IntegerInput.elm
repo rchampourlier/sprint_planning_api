@@ -50,7 +50,8 @@ update action model =
   case action of
     EnterEdit ->
       { model | state = Edit }
-    LeaveEdit -> { model | state = Display }
+    LeaveEdit ->
+      { model | state = Display }
     UpdateValue newValueStr ->
       let
         newValueResult = toInt newValueStr

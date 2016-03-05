@@ -14,22 +14,30 @@ import TeamMember
 -- MODEL
 
 type alias ID = Int
-type alias Model = List (ID, TeamMember.Model)
+type alias Model =
+  { teamMembers : List (ID, TeamMember.Model)
+  , capacityEditionEnabled : Bool
+  }
 
 init : List String -> Model
 init names =
-  List.map (\name -> TeamMember.init name 0) names
-    |> indexList 0
+  let
+    teamMembers = List.map (\name -> TeamMember.init name 0) names
+      |> indexList 0
+  in
+    { teamMembers = teamMembers
+    , capacityEditionEnabled = False
+    }
 
-getNames : Model -> List String
-getNames model =
-  model
+getTeamMemberNames : Model -> List String
+getTeamMemberNames model =
+  model.teamMembers
     |> List.map (\(id, tm) -> tm)
     |> List.map (\tm -> TeamMember.getName tm)
 
 getMaxCapacity : Model -> Int
 getMaxCapacity model =
-  List.map (\(id, tm) -> TeamMember.getCapacity tm) model
+  List.map (\(id, tm) -> TeamMember.getCapacity tm) model.teamMembers
     |> List.maximum
     |> Maybe.withDefault 0
 
@@ -38,14 +46,14 @@ getMaxCapacity model =
 
 type Action
   = Add
-  | Remove ID
   | Modify ID TeamMember.Action
+  | EnableCapacityEdition
+  | DisableCapacityEdition
 
 update : Action -> Model -> Model
 update action model =
   case action of
     Add -> updateAddTeamMemberWithName model "Unknown"
-    Remove id -> model
     Modify id teamMemberAction ->
       let
         updateTeamMember : (ID, TeamMember.Model) -> (ID, TeamMember.Model)
@@ -55,7 +63,17 @@ update action model =
           else
             (teamMemberID, teamMemberModel)
       in
-        List.map updateTeamMember model
+        { model | teamMembers = List.map updateTeamMember model.teamMembers }
+    EnableCapacityEdition ->
+      { model
+        | teamMembers = List.map (\(id, tm) -> (id, TeamMember.updateEnableCapacityEdition tm)) model.teamMembers
+        , capacityEditionEnabled = True
+      }
+    DisableCapacityEdition ->
+      { model
+        | teamMembers = List.map (\(id, tm) -> (id, TeamMember.updateDisableCapacityEdition tm)) model.teamMembers
+        , capacityEditionEnabled = False
+      }
 
 updateAssignments : List (String, List TeamMember.Assignment) -> Model -> Model
 updateAssignments namedAssignmentsList model =
@@ -71,15 +89,15 @@ updateAssignments namedAssignmentsList model =
           Nothing -> teamMemberModel
           Just (name, assignments) -> TeamMember.updateAssignments teamMemberModel assignments
   in
-    List.map (\(id, tm) -> (id, applyNamedAssignmentsList tm)) model
+    { model | teamMembers = List.map (\(id, tm) -> (id, applyNamedAssignmentsList tm)) model.teamMembers }
 
 -- Adds a new team member. No change if a team member with the specified
 -- name is already present.
 updateAddTeamMemberWithName : Model -> String -> Model
 updateAddTeamMemberWithName model name =
-  case List.member name (getNames model) of
+  case List.member name (getTeamMemberNames model) of
     True -> model
-    False -> IndexedList.append model (TeamMember.init name 0)
+    False -> { model | teamMembers = IndexedList.append model.teamMembers (TeamMember.init name 0) }
 
 -- Adds several new team members according to the specified names.
 updateAddTeamMemberWithNames : List String -> Model -> Model
@@ -100,16 +118,22 @@ view address model =
     viewButtonAdd = button
       [ class "mui-btn mui-btn--primary", onClick address Add ]
       [ text "Add" ]
-    viewList = viewTeamMemberList address model maxCapacity
+    buttonToggleCapacityEditionAction = case model.capacityEditionEnabled of
+      True -> DisableCapacityEdition
+      False -> EnableCapacityEdition
+    buttonToggleCapacityEditionText = case model.capacityEditionEnabled of
+      True -> "Done"
+      False -> "Edit capacities"
+    viewButtonToggleCapacityEdition = button
+      [ class "mui-btn", onClick address buttonToggleCapacityEditionAction ]
+      [ text buttonToggleCapacityEditionText ]
+    viewList = List.concatMap (viewTeamMember address maxCapacity) model.teamMembers
   in
     div []
       [ table [ class "team-members-list" ] viewList
       , viewButtonAdd
+      , viewButtonToggleCapacityEdition
       ]
-
-viewTeamMemberList : Signal.Address Action -> Model -> Float -> List Html
-viewTeamMemberList address model maxCapacity =
-  List.concatMap (viewTeamMember address maxCapacity) model
 
 viewTeamMember : Signal.Address Action -> Float -> (ID, TeamMember.Model) -> List Html
 viewTeamMember address maxCapacity (id, tm) =

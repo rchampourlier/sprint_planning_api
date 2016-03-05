@@ -79,7 +79,7 @@ type Action
   | FetchIssues
   | ReceivedIssues (Maybe (List Issue.Model))
   | ModifyIssue Issue.Model Issue.Action
-  | ModifyTeamMembers TeamMemberList.Action
+  | ModifyTeamMemberList TeamMemberList.Action
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -124,10 +124,10 @@ update action model =
         ({ model
             | issues = updatedIssues
             , teamMemberList =
-              TeamMemberList.updateAssignments (getAssignments updatedIssues) model.teamMemberList 
+              TeamMemberList.updateAssignments (getAssignments updatedIssues) model.teamMemberList
           }, effect)
 
-    ModifyTeamMembers teamMemberListAction ->
+    ModifyTeamMemberList teamMemberListAction ->
       ({ model
           | teamMemberList = TeamMemberList.update teamMemberListAction model.teamMemberList
         }
@@ -141,7 +141,7 @@ view address model =
   let
     issuesTodo = getIssuesForStatus TODO model
     issuesDone = getIssuesForStatus DONE model
-    teamMemberNames = TeamMemberList.getNames model.teamMemberList
+    teamMemberNames = TeamMemberList.getTeamMemberNames model.teamMemberList
   in
     div [ class "sprint-planning" ]
       [ div [ class "mui-col-md-8" ]
@@ -154,8 +154,6 @@ view address model =
                   [ input
                     [ type' "text"
                     , placeholder "Enter a sprint name"
-                    -- on : String -> Json.Decoder a -> (a -> Signal.Message) -> Attribute
-                    -- message : Address a -> a -> Message
                     , on "input" targetValue (\str -> Signal.message address (UpdateSprintName str))
                     ]
                     []
@@ -206,7 +204,7 @@ viewIssues address issues teamMemberNames =
 
 viewTeamMembers : Signal.Address Action -> Model -> Html
 viewTeamMembers address model =
-  TeamMemberList.view (Signal.forwardTo address ModifyTeamMembers) model.teamMemberList
+  TeamMemberList.view (Signal.forwardTo address ModifyTeamMemberList) model.teamMemberList
 
 
 -- EFFECTS
