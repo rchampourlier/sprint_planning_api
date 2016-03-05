@@ -40,12 +40,11 @@ type Action
   = Add
   | Remove ID
   | Modify ID TeamMember.Action
-  
+
 update : Action -> Model -> Model
 update action model =
   case action of
-    Add ->
-      IndexedList.append model (TeamMember.init "Unknown" 0)
+    Add -> updateAddTeamMemberWithName model "Unknown"
     Remove id -> model
     Modify id teamMemberAction ->
       let
@@ -58,21 +57,39 @@ update action model =
       in
         List.map updateTeamMember model
 
-updateAssignments : Model -> List (String, List (TeamMember.Role, Int)) -> Model
-updateAssignments model assignments =
+updateAssignments : List (String, List TeamMember.Assignment) -> Model -> Model
+updateAssignments namedAssignmentsList model =
   let
-    applyAssignments : (String, List (TeamMember.Role, Int)) -> Model -> Model
-    applyAssignments (name, nameAssignments) model =
+    applyNamedAssignmentsList : TeamMember.Model -> TeamMember.Model
+    applyNamedAssignmentsList teamMemberModel =
       let
-        applyIfMatchingName : (ID, TeamMember.Model) -> (ID, TeamMember.Model)
-        applyIfMatchingName (id, teamMemberModel) =
-          if TeamMember.getName teamMemberModel == name
-            then (id, TeamMember.updateAssignments teamMemberModel nameAssignments)
-            else (id, teamMemberModel)
+        maybeMatchingAssignments =
+          List.filter (\(name, _) -> name == TeamMember.getName teamMemberModel) namedAssignmentsList
+            |> List.head
       in
-        List.map applyIfMatchingName model
+        case maybeMatchingAssignments of
+          Nothing -> teamMemberModel
+          Just (name, assignments) -> TeamMember.updateAssignments teamMemberModel assignments
   in
-    List.foldl applyAssignments model assignments
+    List.map (\(id, tm) -> (id, applyNamedAssignmentsList tm)) model
+
+-- Adds a new team member. No change if a team member with the specified
+-- name is already present.
+updateAddTeamMemberWithName : Model -> String -> Model
+updateAddTeamMemberWithName model name =
+  case List.member name (getNames model) of
+    True -> model
+    False -> IndexedList.append model (TeamMember.init name 0)
+
+-- Adds several new team members according to the specified names.
+updateAddTeamMemberWithNames : List String -> Model -> Model
+updateAddTeamMemberWithNames names model =
+  case names of
+    [] -> model
+    name :: otherNames ->
+      updateAddTeamMemberWithName model name
+        |> updateAddTeamMemberWithNames otherNames
+
 
 -- VIEW
 

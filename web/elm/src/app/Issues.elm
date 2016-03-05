@@ -4,8 +4,8 @@ import Set exposing (Set)
 
 import Issue
 
-teamMembersNames : List Issue.Model -> Set String
-teamMembersNames issues =
+teamMemberNames : List Issue.Model -> Set String
+teamMemberNames issues =
   let
     insertMaybeName : Maybe String -> Set String -> Set String
     insertMaybeName maybeName names =
@@ -15,7 +15,7 @@ teamMembersNames issues =
   in
     case issues of
       head :: tail ->
-        teamMembersNames tail
+        teamMemberNames tail
           |> insertMaybeName head.developerName
           |> insertMaybeName head.reviewerName
       _ -> Set.empty

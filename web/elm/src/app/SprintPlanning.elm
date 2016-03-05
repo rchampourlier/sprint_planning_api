@@ -34,9 +34,10 @@ init =
   , effectFetchIssues Nothing
   )
 
-getAssignments : List Issue.Model -> List String -> List (String, List (TeamMember.Role, Int))
-getAssignments issues teamMemberNames =
-  List.map (\name -> (name, getAssignmentsForName issues name)) teamMemberNames
+getAssignments : List Issue.Model -> List (String, List TeamMember.Assignment)
+getAssignments issues =
+  let teamMemberNames = Issues.teamMemberNames issues |> Set.toList
+  in List.map (\name -> (name, getAssignmentsForName issues name)) teamMemberNames
 
 getAssignmentsForName : List Issue.Model -> String -> List (TeamMember.Role, Int)
 getAssignmentsForName issues name =
@@ -86,18 +87,21 @@ update action model =
     UpdateSprintName name -> ({ model | sprintName = Just name }, Effects.none)
     FetchIssues -> ( model, effectFetchIssues model.sprintName )
 
+    -- When we receive issues (on app initialization or when fetching issues
+    -- from a specified sprint), we want to add team members from values
+    -- present in the issues.
     ReceivedIssues maybeIssues ->
       case maybeIssues of
         Nothing -> ( model, Effects.none )
         Just issues ->
           let
-            teamMemberList = Issues.teamMembersNames issues
-              |> Set.toList
-              |> TeamMemberList.init
+            namesFromIssues = Issues.teamMemberNames issues |> Set.toList
           in
             ({ model
                 | issues = issues
-                , teamMemberList = updateTeamMemberList model.teamMemberList issues
+                , teamMemberList = model.teamMemberList
+                  |> TeamMemberList.updateAddTeamMemberWithNames namesFromIssues
+                  |> TeamMemberList.updateAssignments (getAssignments issues)
               }, Effects.none )
 
     ModifyIssue issue issueAction ->
@@ -119,7 +123,8 @@ update action model =
       in
         ({ model
             | issues = updatedIssues
-            , teamMemberList = updateTeamMemberList model.teamMemberList updatedIssues
+            , teamMemberList =
+              TeamMemberList.updateAssignments (getAssignments updatedIssues) model.teamMemberList 
           }, effect)
 
     ModifyTeamMembers teamMemberListAction ->
@@ -127,19 +132,6 @@ update action model =
           | teamMemberList = TeamMemberList.update teamMemberListAction model.teamMemberList
         }
       , Effects.none )
-
-updateTeamMemberList : TeamMemberList.Model -> List Issue.Model -> TeamMemberList.Model
-updateTeamMemberList teamMemberList issues =
-  let
-    teamMemberList = case teamMemberList of
-      [] ->
-        Issues.teamMembersNames issues
-          |> Set.toList
-          |> TeamMemberList.init
-      _ -> teamMemberList
-    teamMemberNames = TeamMemberList.getNames teamMemberList
-  in
-    TeamMemberList.updateAssignments teamMemberList (getAssignments issues teamMemberNames)
 
 
 -- VIEW

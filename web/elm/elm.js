@@ -11362,7 +11362,7 @@ Elm.Issues.make = function (_elm) {
    $Set = Elm.Set.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var teamMembersNames = function (issues) {
+   var teamMemberNames = function (issues) {
       var insertMaybeName = F2(function (maybeName,names) {
          var _p0 = maybeName;
          if (_p0.ctor === "Nothing") {
@@ -11374,12 +11374,12 @@ Elm.Issues.make = function (_elm) {
       var _p1 = issues;
       if (_p1.ctor === "::") {
             var _p2 = _p1._0;
-            return A2(insertMaybeName,_p2.reviewerName,A2(insertMaybeName,_p2.developerName,teamMembersNames(_p1._1)));
+            return A2(insertMaybeName,_p2.reviewerName,A2(insertMaybeName,_p2.developerName,teamMemberNames(_p1._1)));
          } else {
             return $Set.empty;
          }
    };
-   return _elm.Issues.values = {_op: _op,teamMembersNames: teamMembersNames};
+   return _elm.Issues.values = {_op: _op,teamMemberNames: teamMemberNames};
 };
 Elm.ListFunctions = Elm.ListFunctions || {};
 Elm.ListFunctions.make = function (_elm) {
@@ -11803,7 +11803,7 @@ Elm.SprintPlanning.make = function (_elm) {
       var teamMemberList = function () {
          var _p3 = model.teamMemberList;
          if (_p3.ctor === "[]") {
-               return $TeamMemberList.init($Set.toList($Issues.teamMembersNames(issues)));
+               return $TeamMemberList.init($Set.toList($Issues.teamMemberNames(issues)));
             } else {
                return model.teamMemberList;
             }
@@ -11820,7 +11820,7 @@ Elm.SprintPlanning.make = function (_elm) {
                  return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
               } else {
                  var _p6 = _p5._0;
-                 var teamMemberList = $TeamMemberList.init($Set.toList($Issues.teamMembersNames(_p6)));
+                 var teamMemberList = $TeamMemberList.init($Set.toList($Issues.teamMemberNames(_p6)));
                  return {ctor: "_Tuple2",_0: A2(updateWithIssues,model,_p6),_1: $Effects.none};
               }
          case "ModifyIssue": var _p7 = _p4._0;

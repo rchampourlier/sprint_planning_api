@@ -11,6 +11,7 @@ import MathUtils exposing (floatRound)
 -- MODEL
 
 type Role = Developer | Reviewer
+type alias Assignment = (Role, Int)
 type alias Model =
   { capacity : IntegerInput.Model
   , name : StringInput.Model
@@ -28,7 +29,7 @@ init name capacity =
 
 getAssigned : Model -> Float
 getAssigned model =
-  (toFloat model.assignmentDeveloper) + 0.2 * (toFloat model.assignmentReviewer)
+  (toFloat model.assignmentDeveloper)
 
 getCapacity : Model -> Int
 getCapacity model =
@@ -53,16 +54,23 @@ update action model =
     ModifyName stringInputAction ->
       { model | name = StringInput.update stringInputAction model.name }
 
-updateAssignments : Model -> List (Role, Int) -> Model
+updateAssignments : Model -> List Assignment -> Model
 updateAssignments model roleAssignments =
   let
-    -- applyAssignment : (Role, Int) -> Model -> Model
+    -- applyAssignment : Assignment -> Model -> Model
     applyAssignment (role, assignment) model =
       case role of
         Developer -> { model | assignmentDeveloper = assignment }
         Reviewer -> { model | assignmentReviewer = assignment }
   in
     List.foldl applyAssignment model roleAssignments
+
+updateAssignmentsReset : Model -> Model
+updateAssignmentsReset model =
+  { model
+    | assignmentDeveloper = 0
+    , assignmentReviewer = 0
+  }
 
 -- VIEW
 

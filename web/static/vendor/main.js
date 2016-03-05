@@ -11375,7 +11375,7 @@ Elm.Issues.make = function (_elm) {
    $Set = Elm.Set.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var teamMembersNames = function (issues) {
+   var teamMemberNames = function (issues) {
       var insertMaybeName = F2(function (maybeName,names) {
          var _p0 = maybeName;
          if (_p0.ctor === "Nothing") {
@@ -11387,12 +11387,12 @@ Elm.Issues.make = function (_elm) {
       var _p1 = issues;
       if (_p1.ctor === "::") {
             var _p2 = _p1._0;
-            return A2(insertMaybeName,_p2.reviewerName,A2(insertMaybeName,_p2.developerName,teamMembersNames(_p1._1)));
+            return A2(insertMaybeName,_p2.reviewerName,A2(insertMaybeName,_p2.developerName,teamMemberNames(_p1._1)));
          } else {
             return $Set.empty;
          }
    };
-   return _elm.Issues.values = {_op: _op,teamMembersNames: teamMembersNames};
+   return _elm.Issues.values = {_op: _op,teamMemberNames: teamMemberNames};
 };
 Elm.ListFunctions = Elm.ListFunctions || {};
 Elm.ListFunctions.make = function (_elm) {
@@ -11530,6 +11530,7 @@ Elm.TeamMember.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $StringInput = Elm.StringInput.make(_elm);
    var _op = {};
+   var updateAssignmentsReset = function (model) {    return _U.update(model,{assignmentDeveloper: 0,assignmentReviewer: 0});};
    var updateAssignments = F2(function (model,roleAssignments) {
       var applyAssignment = F2(function (_p0,model) {
          var _p1 = _p0;
@@ -11555,7 +11556,7 @@ Elm.TeamMember.make = function (_elm) {
    var ModifyCapacity = function (a) {    return {ctor: "ModifyCapacity",_0: a};};
    var getName = function (model) {    return $StringInput.getValue(model.name);};
    var getCapacity = function (model) {    return $IntegerInput.getValue(model.capacity);};
-   var getAssigned = function (model) {    return $Basics.toFloat(model.assignmentDeveloper) + 0.2 * $Basics.toFloat(model.assignmentReviewer);};
+   var getAssigned = function (model) {    return $Basics.toFloat(model.assignmentDeveloper);};
    var view = F2(function (address,model) {
       var viewCapacityInput = A2($IntegerInput.view,A2($Signal.forwardTo,address,ModifyCapacity),model.capacity);
       var viewNameInput = A2($StringInput.view,A2($Signal.forwardTo,address,ModifyName),model.name);
@@ -11591,6 +11592,7 @@ Elm.TeamMember.make = function (_elm) {
                                    ,ModifyName: ModifyName
                                    ,update: update
                                    ,updateAssignments: updateAssignments
+                                   ,updateAssignmentsReset: updateAssignmentsReset
                                    ,view: view};
 };
 Elm.ProgressBar = Elm.ProgressBar || {};
@@ -11645,48 +11647,37 @@ Elm.TeamMemberList.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $TeamMember = Elm.TeamMember.make(_elm);
    var _op = {};
-   var updateAssignments = F2(function (model,assignments) {
-      var applyAssignments = F2(function (_p0,model) {
-         var _p1 = _p0;
-         var applyIfMatchingName = function (_p2) {
-            var _p3 = _p2;
-            var _p5 = _p3._1;
-            var _p4 = _p3._0;
-            return _U.eq($TeamMember.getName(_p5),_p1._0) ? {ctor: "_Tuple2",_0: _p4,_1: A2($TeamMember.updateAssignments,_p5,_p1._1)} : {ctor: "_Tuple2"
-                                                                                                                                         ,_0: _p4
-                                                                                                                                         ,_1: _p5};
-         };
-         return A2($List.map,applyIfMatchingName,model);
-      });
-      return A3($List.foldl,applyAssignments,model,assignments);
-   });
-   var update = F2(function (action,model) {
-      var _p6 = action;
-      switch (_p6.ctor)
-      {case "Add": return A2($IndexedList.append,model,A2($TeamMember.init,"Unknown",0));
-         case "Remove": return model;
-         default: var updateTeamMember = function (_p7) {
-              var _p8 = _p7;
-              var _p10 = _p8._1;
-              var _p9 = _p8._0;
-              return _U.eq(_p9,_p6._0) ? {ctor: "_Tuple2",_0: _p9,_1: A2($TeamMember.update,_p6._1,_p10)} : {ctor: "_Tuple2",_0: _p9,_1: _p10};
-           };
-           return A2($List.map,updateTeamMember,model);}
+   var updateAssignments = F2(function (namedAssignmentsList,model) {
+      var applyNamedAssignmentsList = function (teamMemberModel) {
+         var maybeMatchingAssignments = $List.head(A2($List.filter,
+         function (_p0) {
+            var _p1 = _p0;
+            return _U.eq(_p1._0,$TeamMember.getName(teamMemberModel));
+         },
+         namedAssignmentsList));
+         var _p2 = maybeMatchingAssignments;
+         if (_p2.ctor === "Nothing") {
+               return teamMemberModel;
+            } else {
+               return A2($TeamMember.updateAssignments,teamMemberModel,_p2._0._1);
+            }
+      };
+      return A2($List.map,function (_p3) {    var _p4 = _p3;return {ctor: "_Tuple2",_0: _p4._0,_1: applyNamedAssignmentsList(_p4._1)};},model);
    });
    var Modify = F2(function (a,b) {    return {ctor: "Modify",_0: a,_1: b};});
-   var viewTeamMember = F3(function (address,maxCapacity,_p11) {
-      var _p12 = _p11;
-      var _p13 = _p12._1;
-      var capacity = $Basics.toFloat($TeamMember.getCapacity(_p13));
-      var assigned = $TeamMember.getAssigned(_p13);
+   var viewTeamMember = F3(function (address,maxCapacity,_p5) {
+      var _p6 = _p5;
+      var _p7 = _p6._1;
+      var capacity = $Basics.toFloat($TeamMember.getCapacity(_p7));
+      var assigned = $TeamMember.getAssigned(_p7);
       var remainingRatio = (capacity - assigned) / capacity;
-      return _U.list([A2($TeamMember.view,A2($Signal.forwardTo,address,Modify(_p12._0)),_p13),$ProgressBar.view(remainingRatio)]);
+      return _U.list([A2($TeamMember.view,A2($Signal.forwardTo,address,Modify(_p6._0)),_p7),$ProgressBar.view(remainingRatio)]);
    });
    var viewTeamMemberList = F3(function (address,model,maxCapacity) {    return A2($List.concatMap,A2(viewTeamMember,address,maxCapacity),model);});
    var Remove = function (a) {    return {ctor: "Remove",_0: a};};
    var Add = {ctor: "Add"};
    var getMaxCapacity = function (model) {
-      return A2($Maybe.withDefault,0,$List.maximum(A2($List.map,function (_p14) {    var _p15 = _p14;return $TeamMember.getCapacity(_p15._1);},model)));
+      return A2($Maybe.withDefault,0,$List.maximum(A2($List.map,function (_p8) {    var _p9 = _p8;return $TeamMember.getCapacity(_p9._1);},model)));
    };
    var view = F2(function (address,model) {
       var viewButtonAdd = A2($Html.button,
@@ -11697,8 +11688,42 @@ Elm.TeamMemberList.make = function (_elm) {
       return A2($Html.div,_U.list([]),_U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),viewList),viewButtonAdd]));
    });
    var getNames = function (model) {
-      return A2($List.map,function (tm) {    return $TeamMember.getName(tm);},A2($List.map,function (_p16) {    var _p17 = _p16;return _p17._1;},model));
+      return A2($List.map,function (tm) {    return $TeamMember.getName(tm);},A2($List.map,function (_p10) {    var _p11 = _p10;return _p11._1;},model));
    };
+   var updateAddTeamMemberWithName = F2(function (model,name) {
+      var _p12 = A2($List.member,name,getNames(model));
+      if (_p12 === true) {
+            return model;
+         } else {
+            return A2($IndexedList.append,model,A2($TeamMember.init,name,0));
+         }
+   });
+   var update = F2(function (action,model) {
+      var _p13 = action;
+      switch (_p13.ctor)
+      {case "Add": return A2(updateAddTeamMemberWithName,model,"Unknown");
+         case "Remove": return model;
+         default: var updateTeamMember = function (_p14) {
+              var _p15 = _p14;
+              var _p17 = _p15._1;
+              var _p16 = _p15._0;
+              return _U.eq(_p16,_p13._0) ? {ctor: "_Tuple2",_0: _p16,_1: A2($TeamMember.update,_p13._1,_p17)} : {ctor: "_Tuple2",_0: _p16,_1: _p17};
+           };
+           return A2($List.map,updateTeamMember,model);}
+   });
+   var updateAddTeamMemberWithNames = F2(function (names,model) {
+      updateAddTeamMemberWithNames: while (true) {
+         var _p18 = names;
+         if (_p18.ctor === "[]") {
+               return model;
+            } else {
+               var _v10 = _p18._1,_v11 = A2(updateAddTeamMemberWithName,model,_p18._0);
+               names = _v10;
+               model = _v11;
+               continue updateAddTeamMemberWithNames;
+            }
+      }
+   });
    var init = function (names) {    return A2($ListFunctions.indexList,0,A2($List.map,function (name) {    return A2($TeamMember.init,name,0);},names));};
    return _elm.TeamMemberList.values = {_op: _op
                                        ,init: init
@@ -11709,6 +11734,8 @@ Elm.TeamMemberList.make = function (_elm) {
                                        ,Modify: Modify
                                        ,update: update
                                        ,updateAssignments: updateAssignments
+                                       ,updateAddTeamMemberWithName: updateAddTeamMemberWithName
+                                       ,updateAddTeamMemberWithNames: updateAddTeamMemberWithNames
                                        ,view: view
                                        ,viewTeamMemberList: viewTeamMemberList
                                        ,viewTeamMember: viewTeamMember};
@@ -11818,49 +11845,43 @@ Elm.SprintPlanning.make = function (_elm) {
       },
       _U.list([$TeamMember.Developer,$TeamMember.Reviewer]));
    });
-   var getAssignments = F2(function (issues,teamMemberNames) {
+   var getAssignments = function (issues) {
+      var teamMemberNames = $Set.toList($Issues.teamMemberNames(issues));
       return A2($List.map,function (name) {    return {ctor: "_Tuple2",_0: name,_1: A2(getAssignmentsForName,issues,name)};},teamMemberNames);
-   });
-   var updateTeamMemberList = F2(function (teamMemberList,issues) {
-      var teamMemberList = function () {
-         var _p4 = teamMemberList;
-         if (_p4.ctor === "[]") {
-               return $TeamMemberList.init($Set.toList($Issues.teamMembersNames(issues)));
-            } else {
-               return teamMemberList;
-            }
-      }();
-      var teamMemberNames = $TeamMemberList.getNames(teamMemberList);
-      return A2($TeamMemberList.updateAssignments,teamMemberList,A2(getAssignments,issues,teamMemberNames));
-   });
+   };
    var update = F2(function (action,model) {
-      var _p5 = action;
-      switch (_p5.ctor)
-      {case "UpdateSprintName": return {ctor: "_Tuple2",_0: _U.update(model,{sprintName: $Maybe.Just(_p5._0)}),_1: $Effects.none};
+      var _p4 = action;
+      switch (_p4.ctor)
+      {case "UpdateSprintName": return {ctor: "_Tuple2",_0: _U.update(model,{sprintName: $Maybe.Just(_p4._0)}),_1: $Effects.none};
          case "FetchIssues": return {ctor: "_Tuple2",_0: model,_1: effectFetchIssues(model.sprintName)};
-         case "ReceivedIssues": var _p6 = _p5._0;
-           if (_p6.ctor === "Nothing") {
+         case "ReceivedIssues": var _p5 = _p4._0;
+           if (_p5.ctor === "Nothing") {
                  return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
               } else {
-                 var _p7 = _p6._0;
-                 var teamMemberList = $TeamMemberList.init($Set.toList($Issues.teamMembersNames(_p7)));
+                 var _p6 = _p5._0;
+                 var namesFromIssues = $Set.toList($Issues.teamMemberNames(_p6));
                  return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{issues: _p7,teamMemberList: A2(updateTeamMemberList,model.teamMemberList,_p7)})
+                        ,_0: _U.update(model,
+                        {issues: _p6
+                        ,teamMemberList: A2($TeamMemberList.updateAssignments,
+                        getAssignments(_p6),
+                        A2($TeamMemberList.updateAddTeamMemberWithNames,namesFromIssues,model.teamMemberList))})
                         ,_1: $Effects.none};
               }
-         case "ModifyIssue": var _p8 = _p5._0;
-           var updateIssue = function (i) {    return _U.eq(i.key,_p8.key) ? A2($Issue.update,_p5._1,i) : {ctor: "_Tuple2",_0: i,_1: $Effects.none};};
+         case "ModifyIssue": var _p7 = _p4._0;
+           var updateIssue = function (i) {    return _U.eq(i.key,_p7.key) ? A2($Issue.update,_p4._1,i) : {ctor: "_Tuple2",_0: i,_1: $Effects.none};};
            var issuesAndEffects = A2($List.map,updateIssue,model.issues);
            var updatedIssues = A2($List.map,$Basics.fst,issuesAndEffects);
            var effect = A2($Effects.map,
-           ModifyIssue(_p8),
+           ModifyIssue(_p7),
            A2($Maybe.withDefault,
            $Effects.none,
            $List.head(A2($List.filter,function (e) {    return !_U.eq(e,$Effects.none);},A2($List.map,$Basics.snd,issuesAndEffects)))));
            return {ctor: "_Tuple2"
-                  ,_0: _U.update(model,{issues: updatedIssues,teamMemberList: A2(updateTeamMemberList,model.teamMemberList,updatedIssues)})
+                  ,_0: _U.update(model,
+                  {issues: updatedIssues,teamMemberList: A2($TeamMemberList.updateAssignments,getAssignments(updatedIssues),model.teamMemberList)})
                   ,_1: effect};
-         default: return {ctor: "_Tuple2",_0: _U.update(model,{teamMemberList: A2($TeamMemberList.update,_p5._0,model.teamMemberList)}),_1: $Effects.none};}
+         default: return {ctor: "_Tuple2",_0: _U.update(model,{teamMemberList: A2($TeamMemberList.update,_p4._0,model.teamMemberList)}),_1: $Effects.none};}
    });
    var Model = F3(function (a,b,c) {    return {issues: a,sprintName: b,teamMemberList: c};});
    var init = {ctor: "_Tuple2",_0: A3(Model,_U.list([]),$Maybe.Nothing,$TeamMemberList.init(_U.list([]))),_1: effectFetchIssues($Maybe.Nothing)};
@@ -11929,7 +11950,6 @@ Elm.SprintPlanning.make = function (_elm) {
                                        ,ModifyIssue: ModifyIssue
                                        ,ModifyTeamMembers: ModifyTeamMembers
                                        ,update: update
-                                       ,updateTeamMemberList: updateTeamMemberList
                                        ,view: view
                                        ,viewIssues: viewIssues
                                        ,viewTeamMembers: viewTeamMembers
