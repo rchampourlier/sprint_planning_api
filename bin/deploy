@@ -13,6 +13,6 @@ if File.exist?(env_file)
   system command
 end
 
-command = 'git push heroku heroku:master'
+command = 'git push heroku master:master'
 puts "[RUN] #{command}"
 system command
