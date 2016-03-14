@@ -18,7 +18,6 @@ defmodule PlanningTool.JIRA.FetchIssue.HTTPoison do
   end
 
   def process_response_body(body) do
-    body
-      |> Poison.decode!
+    body |> Poison.decode!
   end
 end

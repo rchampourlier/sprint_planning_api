@@ -1,5 +1,5 @@
 defmodule PlanningTool.JIRA.FetchIssues.InMemory do
-  @behaviour PlanningTool.JIRA.SearchIssues
+  @behaviour PlanningTool.JIRA.FetchIssues
 
   def execute(keys) do
     build_issues(keys)

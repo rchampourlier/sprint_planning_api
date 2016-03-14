@@ -17,6 +17,7 @@ defmodule PlanningTool.JIRA.FetchIssues.HTTPoison do
 
   defp execute_get_issue_job(caller, key) do
     response = pooled_get_issue(key)
+    # Some jobs get stuck here until receive times out
     send caller, {:ok, response}
   end
 

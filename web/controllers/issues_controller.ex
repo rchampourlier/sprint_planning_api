@@ -23,7 +23,7 @@ defmodule PlanningTool.IssuesController do
       |> jira_fetch_issues_module.execute
   end
   defp issues(sprintName) do
-    jira_search_issues_module.execute(sprintName)
+    jira_search_issues_module.execute(%{sprint: sprintName})
       |> jira_fetch_issues_module.execute
   end
 

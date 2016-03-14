@@ -4,6 +4,9 @@ defmodule PlanningTool.JIRA.SearchIssues.InMemory do
   def execute(:open_sprints) do
     build_issue_keys(:random.uniform(5))
   end
+  def execute(_) do
+    build_issue_keys(:random.uniform(5))
+  end
 
   defp build_issue_key do
     "PROJ-#{:random.uniform(1000)}"

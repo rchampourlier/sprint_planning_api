@@ -1,19 +1,28 @@
 # Search JIRA issues according to some pre-defined queries.
 # Returns a list of strings of the JIRA issue keys.
+#
+# TECHNICAL-DEBT: forcing maxResults to 200, not handling paginated
+#   responses.
 defmodule PlanningTool.JIRA.SearchIssues.HTTPoison do
   @behaviour PlanningTool.JIRA.SearchIssues
 
   def execute(:open_sprints) do
     jql = "SPRINT in openSprints()"
-    params = [ {:jql, jql}, {:fields, "id"} ]
+    params = [ {:jql, jql}, {:fields, "id"}, {:startAt, 0}, {:maxResults, 200} ]
     get!("/search", [], [params: params])
-      |> Map.get :body
+      |> Map.get(:body)
   end
-  def execute(sprintName) do
+  def execute(%{sprint: sprintName}) do
     jql = "SPRINT = \"" <> sprintName <> "\""
-    params = [ {:jql, jql}, {:fields, "id"} ]
+    params = [ {:jql, jql}, {:fields, "id"}, {:startAt, 0}, {:maxResults, 200} ]
     get!("/search", [], [params: params])
-      |> Map.get :body
+      |> Map.get(:body)
+  end
+  def execute(%{jql: jql}) do
+    params = [ {:jql, jql}, {:fields, "id"}, {:startAt, 0}, {:maxResults, 200} ]
+    results = get!("/search", [], [params: params])
+      |> Map.get(:body)
+    results
   end
 
   # HTTPoison API-wrapping

@@ -6,4 +6,5 @@ defmodule PlanningTool.JIRA.SearchIssues do
   Returns an array of strings representing the issue keys.
   """
   @callback execute(criteria :: Atom.t) :: [String.t]
+  @callback execute(Map.t) :: [String.t]
 end
