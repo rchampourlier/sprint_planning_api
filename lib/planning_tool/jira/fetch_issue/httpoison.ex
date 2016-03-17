@@ -3,8 +3,10 @@ defmodule PlanningTool.JIRA.FetchIssue.HTTPoison do
   @behaviour PlanningTool.JIRA.FetchIssue
 
   def execute(key) do
-    get!("/issue/#{key}")
-      |> Map.get :body
+    case get("/issue/#{key}") do
+      { :ok, response } -> { :fetch_ok, (response |> Map.get(:body)) }
+      { :error, reason } -> { :fetch_error, reason }
+    end
   end
 
   use HTTPoison.Base # HTTPoison API-wrapping
