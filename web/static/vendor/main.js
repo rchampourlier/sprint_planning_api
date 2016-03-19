@@ -11861,6 +11861,20 @@ Elm.SprintPlanning.make = function (_elm) {
    $Json$Decode.oneOf(_U.list([A2($Json$Decode._op[":="],"estimate",$Json$Decode.$int),$Json$Decode.succeed(0)])),
    $Json$Decode.maybe(A2($Json$Decode._op[":="],"developer",$Json$Decode.string)),
    $Json$Decode.maybe(A2($Json$Decode._op[":="],"reviewer",$Json$Decode.string)));
+   var UpdateSprintName = function (a) {    return {ctor: "UpdateSprintName",_0: a};};
+   var ReceivedIssues = function (a) {    return {ctor: "ReceivedIssues",_0: a};};
+   var effectFetchIssues = function (maybeSprintName) {
+      var url_base = "/api/issues";
+      var url = function () {
+         var _p0 = maybeSprintName;
+         if (_p0.ctor === "Nothing") {
+               return A2($Http.url,url_base,_U.list([]));
+            } else {
+               return A2($Http.url,url_base,_U.list([{ctor: "_Tuple2",_0: "sprintName",_1: _p0._0}]));
+            }
+      }();
+      return $Effects.task(A2($Task.map,ReceivedIssues,$Task.toMaybe(A2($Http.get,$Json$Decode.list(decodeIssue),url))));
+   };
    var ModifyTeamMemberList = function (a) {    return {ctor: "ModifyTeamMemberList",_0: a};};
    var viewTeamMembers = F2(function (address,model) {
       return A2($TeamMemberList.view,A2($Signal.forwardTo,address,ModifyTeamMemberList),model.teamMemberList);
@@ -11882,24 +11896,26 @@ Elm.SprintPlanning.make = function (_elm) {
                       ,A2($Html.th,_U.list([]),_U.list([$Html.text("Reviewer")]))]))]))
               ,A2($Html.tbody,_U.list([]),A2($List.map,viewIssue,issues))]))]));
    });
-   var ReceivedIssues = function (a) {    return {ctor: "ReceivedIssues",_0: a};};
-   var effectFetchIssues = function (maybeSprintName) {
-      var url_base = "/api/issues";
-      var url = function () {
-         var _p0 = maybeSprintName;
-         if (_p0.ctor === "Nothing") {
-               return A2($Http.url,url_base,_U.list([]));
+   var HideAppStatusLine = {ctor: "HideAppStatusLine"};
+   var FetchIssues = {ctor: "FetchIssues"};
+   var buildAppStatusLoadingIssuesMessage = F2(function (level,maybeSprintName) {
+      var issuesLabel = function () {
+         var _p1 = maybeSprintName;
+         if (_p1.ctor === "Nothing") {
+               return "issues for open sprints";
             } else {
-               return A2($Http.url,url_base,_U.list([{ctor: "_Tuple2",_0: "sprintName",_1: _p0._0}]));
+               return A2($Basics._op["++"],"issues for ",_p1._0);
             }
       }();
-      return $Effects.task(A2($Task.map,ReceivedIssues,$Task.toMaybe(A2($Http.get,$Json$Decode.list(decodeIssue),url))));
-   };
-   var FetchIssues = {ctor: "FetchIssues"};
-   var UpdateSprintName = function (a) {    return {ctor: "UpdateSprintName",_0: a};};
+      var _p2 = level;
+      switch (_p2.ctor)
+      {case "WIP": return A2($Basics._op["++"],"loading ",issuesLabel);
+         case "SUCCESS": return A2($Basics._op["++"],"loaded ",issuesLabel);
+         default: return A2($Basics._op["++"],"failed to load ",issuesLabel);}
+   });
    var getIssuesForStatus = F2(function (status,model) {
-      var _p1 = status;
-      if (_p1.ctor === "TODO") {
+      var _p3 = status;
+      if (_p3.ctor === "TODO") {
             return A2($List.filter,function (i) {    return _U.eq(i.developerName,$Maybe.Nothing) || _U.eq(i.reviewerName,$Maybe.Nothing);},model.issues);
          } else {
             return A2($List.filter,function (i) {    return !_U.eq(i.developerName,$Maybe.Nothing) && !_U.eq(i.reviewerName,$Maybe.Nothing);},model.issues);
@@ -11911,18 +11927,18 @@ Elm.SprintPlanning.make = function (_elm) {
    var calculateAssignmentForNameAndRole = F3(function (issues,teamMemberName,role) {
       var is = F2(function (role,issue) {
          var maybeName = function () {
-            var _p2 = role;
-            if (_p2.ctor === "Developer") {
+            var _p4 = role;
+            if (_p4.ctor === "Developer") {
                   return issue.developerName;
                } else {
                   return issue.reviewerName;
                }
          }();
-         var _p3 = maybeName;
-         if (_p3.ctor === "Nothing") {
+         var _p5 = maybeName;
+         if (_p5.ctor === "Nothing") {
                return false;
             } else {
-               return _U.eq(_p3._0,teamMemberName);
+               return _U.eq(_p5._0,teamMemberName);
             }
       });
       return sumEstimates(A2($List.filter,is(role),issues));
@@ -11938,45 +11954,31 @@ Elm.SprintPlanning.make = function (_elm) {
       var teamMemberNames = $Set.toList($Issues.teamMemberNames(issues));
       return A2($List.map,function (name) {    return {ctor: "_Tuple2",_0: name,_1: A2(getAssignmentsForName,issues,name)};},teamMemberNames);
    };
-   var update = F2(function (action,model) {
-      var _p4 = action;
-      switch (_p4.ctor)
-      {case "UpdateSprintName": return {ctor: "_Tuple2",_0: _U.update(model,{sprintName: $Maybe.Just(_p4._0)}),_1: $Effects.none};
-         case "FetchIssues": return {ctor: "_Tuple2",_0: model,_1: effectFetchIssues(model.sprintName)};
-         case "ReceivedIssues": var _p5 = _p4._0;
-           if (_p5.ctor === "Nothing") {
-                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-              } else {
-                 var _p6 = _p5._0;
-                 var namesFromIssues = $Set.toList($Issues.teamMemberNames(_p6));
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,
-                        {issues: _p6
-                        ,teamMemberList: A2($TeamMemberList.updateAssignments,
-                        getAssignments(_p6),
-                        A2($TeamMemberList.updateAddTeamMemberWithNames,namesFromIssues,model.teamMemberList))})
-                        ,_1: $Effects.none};
-              }
-         case "ModifyIssue": var _p7 = _p4._0;
-           var updateIssue = function (i) {    return _U.eq(i.key,_p7.key) ? A2($Issue.update,_p4._1,i) : {ctor: "_Tuple2",_0: i,_1: $Effects.none};};
-           var issuesAndEffects = A2($List.map,updateIssue,model.issues);
-           var updatedIssues = A2($List.map,$Basics.fst,issuesAndEffects);
-           var effect = A2($Effects.map,
-           ModifyIssue(_p7),
-           A2($Maybe.withDefault,
-           $Effects.none,
-           $List.head(A2($List.filter,function (e) {    return !_U.eq(e,$Effects.none);},A2($List.map,$Basics.snd,issuesAndEffects)))));
-           return {ctor: "_Tuple2"
-                  ,_0: _U.update(model,
-                  {issues: updatedIssues,teamMemberList: A2($TeamMemberList.updateAssignments,getAssignments(updatedIssues),model.teamMemberList)})
-                  ,_1: effect};
-         default: return {ctor: "_Tuple2",_0: _U.update(model,{teamMemberList: A2($TeamMemberList.update,_p4._0,model.teamMemberList)}),_1: $Effects.none};}
-   });
-   var Model = F3(function (a,b,c) {    return {issues: a,sprintName: b,teamMemberList: c};});
-   var init = {ctor: "_Tuple2",_0: A3(Model,_U.list([]),$Maybe.Nothing,$TeamMemberList.init(_U.list([]))),_1: effectFetchIssues($Maybe.Nothing)};
+   var Model = F4(function (a,b,c,d) {    return {appStatus: a,issues: b,sprintName: c,teamMemberList: d};});
    var DONE = {ctor: "DONE"};
    var TODO = {ctor: "TODO"};
    var view = F2(function (address,model) {
+      var statusLineClassSuffix = function () {
+         var _p6 = model.appStatus.level;
+         switch (_p6.ctor)
+         {case "WIP": return "wip";
+            case "SUCCESS": return "success";
+            default: return "error";}
+      }();
+      var statusLine = function () {
+         var _p7 = model.appStatus.message;
+         if (_p7.ctor === "Nothing") {
+               return _U.list([]);
+            } else {
+               return _U.list([A2($Html.div,
+               _U.list([$Html$Attributes.$class(A2($Basics._op["++"],"mui-row status-line status-line--",statusLineClassSuffix))]),
+               _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("mui-col-md-11")]),_U.list([$Html.text(_p7._0)]))
+                       ,A2($Html.span,
+                       _U.list([$Html$Attributes.$class("mui-col-md-1 mui-btn mui-btn--small mui-btn--flat status-line__btn")
+                               ,A2($Html$Events.onClick,address,HideAppStatusLine)]),
+                       _U.list([$Html.text("Hide")]))]))]);
+            }
+      }();
       var teamMemberNames = $TeamMemberList.getTeamMemberNames(model.teamMemberList);
       var issuesDone = A2(getIssuesForStatus,DONE,model);
       var issuesTodo = A2(getIssuesForStatus,TODO,model);
@@ -11985,10 +11987,11 @@ Elm.SprintPlanning.make = function (_elm) {
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("mui-col-md-8")]),
               _U.list([A2($Html.div,
-                      _U.list([$Html$Attributes.$class("mui-panel")]),
+                      _U.list([$Html$Attributes.$class("mui-panel configuration")]),
                       _U.list([A2($Html.div,
-                      _U.list([$Html$Attributes.$class("sprint-selector")]),
-                      _U.list([A2($Html.legend,_U.list([]),_U.list([$Html.text("Sprint")]))
+                      _U.list([$Html$Attributes.$class("configuration")]),
+                      A2($Basics._op["++"],
+                      _U.list([A2($Html.legend,_U.list([]),_U.list([$Html.text("Configuration")]))
                               ,A2($Html.div,
                               _U.list([$Html$Attributes.$class("mui-row")]),
                               _U.list([A2($Html.div,
@@ -12009,7 +12012,8 @@ Elm.SprintPlanning.make = function (_elm) {
                                       _U.list([$Html$Attributes.$class("mui-col-md-6")]),
                                       _U.list([A2($Html.button,
                                       _U.list([$Html$Attributes.$class("mui-btn mui-btn--primary"),A2($Html$Events.onClick,address,FetchIssues)]),
-                                      _U.list([$Html.text("Fetch sprint\'s issues")]))]))]))]))]))
+                                      _U.list([$Html.text("Fetch sprint\'s issues")]))]))]))]),
+                      statusLine))]))
                       ,A2($Html.h2,_U.list([]),_U.list([$Html.text("Issues - TODO")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("mui-panel")]),
@@ -12023,7 +12027,63 @@ Elm.SprintPlanning.make = function (_elm) {
               _U.list([A2($Html.h2,_U.list([]),_U.list([$Html.text("Team Members")]))
                       ,A2($Html.div,_U.list([$Html$Attributes.$class("mui-panel")]),_U.list([A2(viewTeamMembers,address,model)]))]))]));
    });
+   var AppStatus = F2(function (a,b) {    return {level: a,message: b};});
+   var ERROR = {ctor: "ERROR"};
+   var SUCCESS = {ctor: "SUCCESS"};
+   var WIP = {ctor: "WIP"};
+   var init = {ctor: "_Tuple2"
+              ,_0: A4(Model,
+              {level: WIP,message: $Maybe.Just(A2(buildAppStatusLoadingIssuesMessage,WIP,$Maybe.Nothing))},
+              _U.list([]),
+              $Maybe.Nothing,
+              $TeamMemberList.init(_U.list([])))
+              ,_1: effectFetchIssues($Maybe.Nothing)};
+   var update = F2(function (action,model) {
+      var _p8 = action;
+      switch (_p8.ctor)
+      {case "FetchIssues": var appStatus = {level: WIP,message: $Maybe.Just(A2(buildAppStatusLoadingIssuesMessage,WIP,model.sprintName))};
+           return {ctor: "_Tuple2",_0: _U.update(model,{appStatus: appStatus}),_1: effectFetchIssues(model.sprintName)};
+         case "HideAppStatusLine": var appStatus = {level: WIP,message: $Maybe.Nothing};
+           return {ctor: "_Tuple2",_0: _U.update(model,{appStatus: appStatus}),_1: $Effects.none};
+         case "ModifyIssue": var _p9 = _p8._0;
+           var updateIssue = function (i) {    return _U.eq(i.key,_p9.key) ? A2($Issue.update,_p8._1,i) : {ctor: "_Tuple2",_0: i,_1: $Effects.none};};
+           var issuesAndEffects = A2($List.map,updateIssue,model.issues);
+           var updatedIssues = A2($List.map,$Basics.fst,issuesAndEffects);
+           var effect = A2($Effects.map,
+           ModifyIssue(_p9),
+           A2($Maybe.withDefault,
+           $Effects.none,
+           $List.head(A2($List.filter,function (e) {    return !_U.eq(e,$Effects.none);},A2($List.map,$Basics.snd,issuesAndEffects)))));
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,
+                  {issues: updatedIssues,teamMemberList: A2($TeamMemberList.updateAssignments,getAssignments(updatedIssues),model.teamMemberList)})
+                  ,_1: effect};
+         case "ModifyTeamMemberList": return {ctor: "_Tuple2"
+                                             ,_0: _U.update(model,{teamMemberList: A2($TeamMemberList.update,_p8._0,model.teamMemberList)})
+                                             ,_1: $Effects.none};
+         case "ReceivedIssues": var appStatus = {level: SUCCESS,message: $Maybe.Just(A2(buildAppStatusLoadingIssuesMessage,SUCCESS,model.sprintName))};
+           var _p10 = _p8._0;
+           if (_p10.ctor === "Nothing") {
+                 return {ctor: "_Tuple2",_0: _U.update(model,{appStatus: appStatus}),_1: $Effects.none};
+              } else {
+                 var _p11 = _p10._0;
+                 var namesFromIssues = $Set.toList($Issues.teamMemberNames(_p11));
+                 return {ctor: "_Tuple2"
+                        ,_0: _U.update(model,
+                        {appStatus: appStatus
+                        ,issues: _p11
+                        ,teamMemberList: A2($TeamMemberList.updateAssignments,
+                        getAssignments(_p11),
+                        A2($TeamMemberList.updateAddTeamMemberWithNames,namesFromIssues,model.teamMemberList))})
+                        ,_1: $Effects.none};
+              }
+         default: return {ctor: "_Tuple2",_0: _U.update(model,{sprintName: $Maybe.Just(_p8._0)}),_1: $Effects.none};}
+   });
    return _elm.SprintPlanning.values = {_op: _op
+                                       ,WIP: WIP
+                                       ,SUCCESS: SUCCESS
+                                       ,ERROR: ERROR
+                                       ,AppStatus: AppStatus
                                        ,TODO: TODO
                                        ,DONE: DONE
                                        ,Model: Model
@@ -12033,11 +12093,13 @@ Elm.SprintPlanning.make = function (_elm) {
                                        ,calculateAssignmentForNameAndRole: calculateAssignmentForNameAndRole
                                        ,sumEstimates: sumEstimates
                                        ,getIssuesForStatus: getIssuesForStatus
-                                       ,UpdateSprintName: UpdateSprintName
+                                       ,buildAppStatusLoadingIssuesMessage: buildAppStatusLoadingIssuesMessage
                                        ,FetchIssues: FetchIssues
-                                       ,ReceivedIssues: ReceivedIssues
+                                       ,HideAppStatusLine: HideAppStatusLine
                                        ,ModifyIssue: ModifyIssue
                                        ,ModifyTeamMemberList: ModifyTeamMemberList
+                                       ,ReceivedIssues: ReceivedIssues
+                                       ,UpdateSprintName: UpdateSprintName
                                        ,update: update
                                        ,view: view
                                        ,viewIssues: viewIssues

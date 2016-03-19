@@ -20,17 +20,27 @@ import TeamMemberList
 
 -- MODEL
 
+type Level = WIP | SUCCESS | ERROR
+type alias AppStatus =
+  { level : Level
+  , message : Maybe String
+}
 type IssueStatus = TODO | DONE
 type alias ID = Int
 type alias Model =
-  { issues : List Issue.Model
+  { appStatus : AppStatus
+  , issues : List Issue.Model
   , sprintName : Maybe String
   , teamMemberList : TeamMemberList.Model
   }
 
 init : (Model, Effects Action)
 init =
-  ( Model [] Nothing (TeamMemberList.init [])
+  ( Model
+    { level = WIP, message = Just (buildAppStatusLoadingIssuesMessage WIP Nothing) }
+    []
+    Nothing
+    (TeamMemberList.init [])
   , effectFetchIssues Nothing
   )
 
@@ -71,38 +81,50 @@ getIssuesForStatus status model =
     TODO -> List.filter (\i -> i.developerName == Nothing || i.reviewerName == Nothing) model.issues
     DONE -> List.filter (\i -> i.developerName /= Nothing && i.reviewerName /= Nothing) model.issues
 
+buildAppStatusLoadingIssuesMessage : Level -> Maybe String -> String
+buildAppStatusLoadingIssuesMessage level maybeSprintName =
+  let
+    issuesLabel = case maybeSprintName of
+      Nothing -> "issues for open sprints"
+      Just sprintName -> "issues for " ++ sprintName
+  in
+    case level of
+      WIP -> "loading " ++ issuesLabel
+      SUCCESS -> "loaded " ++ issuesLabel
+      ERROR -> "failed to load " ++ issuesLabel
+
 
 -- UPDATE
 
 type Action
-  = UpdateSprintName String
-  | FetchIssues
-  | ReceivedIssues (Maybe (List Issue.Model))
+  = FetchIssues
+  | HideAppStatusLine
   | ModifyIssue Issue.Model Issue.Action
   | ModifyTeamMemberList TeamMemberList.Action
+  | ReceivedIssues (Maybe (List Issue.Model))
+  | UpdateSprintName String
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
-    UpdateSprintName name -> ({ model | sprintName = Just name }, Effects.none)
-    FetchIssues -> ( model, effectFetchIssues model.sprintName )
 
-    -- When we receive issues (on app initialization or when fetching issues
-    -- from a specified sprint), we want to add team members from values
-    -- present in the issues.
-    ReceivedIssues maybeIssues ->
-      case maybeIssues of
-        Nothing -> ( model, Effects.none )
-        Just issues ->
-          let
-            namesFromIssues = Issues.teamMemberNames issues |> Set.toList
-          in
-            ({ model
-                | issues = issues
-                , teamMemberList = model.teamMemberList
-                  |> TeamMemberList.updateAddTeamMemberWithNames namesFromIssues
-                  |> TeamMemberList.updateAssignments (getAssignments issues)
-              }, Effects.none )
+    FetchIssues ->
+      let appStatus =
+        { level = WIP
+        , message = Just (buildAppStatusLoadingIssuesMessage WIP model.sprintName)
+        }
+      in
+        ( { model | appStatus = appStatus }
+        , effectFetchIssues model.sprintName
+        )
+
+    HideAppStatusLine ->
+      let appStatus =
+        { level = WIP
+        , message = Nothing
+        }
+      in
+        ( { model | appStatus = appStatus } , Effects.none )
 
     ModifyIssue issue issueAction ->
       let
@@ -133,6 +155,33 @@ update action model =
         }
       , Effects.none )
 
+    -- When we receive issues (on app initialization or when fetching issues
+    -- from a specified sprint), we want to add team members from values
+    -- present in the issues.
+    ReceivedIssues maybeIssues ->
+      let appStatus =
+        { level = SUCCESS
+        , message = Just (buildAppStatusLoadingIssuesMessage SUCCESS model.sprintName)
+        }
+      in
+        case maybeIssues of
+          Nothing ->
+            ( { model | appStatus = appStatus } , Effects.none )
+          Just issues ->
+            let
+              namesFromIssues = Issues.teamMemberNames issues |> Set.toList
+            in
+              ({ model
+                  | appStatus = appStatus
+                  , issues = issues
+                  , teamMemberList = model.teamMemberList
+                    |> TeamMemberList.updateAddTeamMemberWithNames namesFromIssues
+                    |> TeamMemberList.updateAssignments (getAssignments issues)
+                }, Effects.none )
+
+    UpdateSprintName name ->
+      ({ model | sprintName = Just name }, Effects.none )
+
 
 -- VIEW
 
@@ -142,12 +191,32 @@ view address model =
     issuesTodo = getIssuesForStatus TODO model
     issuesDone = getIssuesForStatus DONE model
     teamMemberNames = TeamMemberList.getTeamMemberNames model.teamMemberList
+    statusLineClassSuffix = case model.appStatus.level of
+      WIP -> "wip"
+      SUCCESS -> "success"
+      ERROR -> "error"
+
+    statusLine : List Html
+    statusLine = case model.appStatus.message of
+      Nothing -> []
+      Just message -> [
+        div
+          [ class ("mui-row status-line status-line--" ++ statusLineClassSuffix) ]
+          [ div [ class "mui-col-md-11" ] [ text message ]
+          , span
+            [ class "mui-col-md-1 mui-btn mui-btn--small mui-btn--flat status-line__btn"
+            , onClick address HideAppStatusLine
+            ]
+            [ text "Hide" ]
+          ]
+        ]
+
   in
     div [ class "sprint-planning" ]
       [ div [ class "mui-col-md-8" ]
-        [ div [ class "mui-panel" ]
-          [ div [ class "sprint-selector" ]
-            [ legend [] [ text <| "Sprint" ]
+        [ div [ class "mui-panel configuration" ]
+          [ div [ class "configuration" ]
+            ([ legend [] [ text "Configuration" ]
             , div [ class "mui-row" ]
               [ div [ class "mui-col-md-6" ]
                 [ div [ class "mui-textfield" ]
@@ -165,7 +234,7 @@ view address model =
                   [ text "Fetch sprint's issues" ]
                 ]
               ]
-            ]
+            ] ++ statusLine )
           ]
         , h2 [] [ text "Issues - TODO" ]
         , div

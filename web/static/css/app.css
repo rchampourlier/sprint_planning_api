@@ -13,8 +13,45 @@ h1 {
 .sprint-planning {
 }
 
-.sprint-selector .mui-textfield {
+.configuration.mui-panel {
+  padding-bottom: 0; /* for .status-line */
+}
+
+.configuration .mui-textfield {
   padding-top: 6px;
+}
+
+.status-line {
+  background-color: grey;
+  color: white;
+  text-transform: uppercase;
+  padding: 5px 0;
+  position: relative; /* for .status-line__btn */
+}
+
+.status-line__btn.mui-btn.mui-btn--flat {
+  position: absolute;
+  margin: 0;
+  right: 5px;
+  top: 5%;
+  height: 85%;
+  line-height: 200%;
+  color: white;
+}
+.status-line__btn.mui-btn.mui-btn--flat:hover {
+  color: black;
+}
+
+.status-line--wip{
+  background-color: orange;
+}
+
+.status-line--success {
+  background-color: green;
+}
+
+.status-line--error {
+  background-color: red;
 }
 
 /* ISSUES */
