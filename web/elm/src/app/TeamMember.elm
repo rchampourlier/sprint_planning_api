@@ -63,7 +63,7 @@ updateAssignments model roleAssignments =
         Developer -> { model | assignmentDeveloper = assignment }
         Reviewer -> { model | assignmentReviewer = assignment }
   in
-    List.foldl applyAssignment model roleAssignments
+    List.foldl applyAssignment (updateAssignmentsReset model) roleAssignments
 
 updateAssignmentsReset : Model -> Model
 updateAssignmentsReset model =

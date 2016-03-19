@@ -83,9 +83,16 @@ update action model =
     HideUsersWithZeroCapacity ->
       { model | isShowingUsersWithZeroCapacity = False }
 
+-- Update the assignments of the team members in the list.
+-- First reset all assignments (all team members are reset
+-- to 0 of assignment). Then, all assignments passed in
+-- namedAssignmentsList are processed.
 updateAssignments : List (String, List TeamMember.Assignment) -> Model -> Model
 updateAssignments namedAssignmentsList model =
   let
+    -- resetAssignments : Model -> Model
+    -- resetAssignments model =
+    --   List.map (\(_, tm) -> TeamMember.updateAssignmentReset tm) model.teamMembers
     applyNamedAssignmentsList : TeamMember.Model -> TeamMember.Model
     applyNamedAssignmentsList teamMemberModel =
       let
@@ -94,10 +101,13 @@ updateAssignments namedAssignmentsList model =
             |> List.head
       in
         case maybeMatchingAssignments of
-          Nothing -> teamMemberModel
-          Just (name, assignments) -> TeamMember.updateAssignments teamMemberModel assignments
+          Nothing -> TeamMember.updateAssignmentsReset teamMemberModel
+          Just (name, assignments) ->
+            TeamMember.updateAssignments teamMemberModel assignments
   in
-    { model | teamMembers = List.map (\(id, tm) -> (id, applyNamedAssignmentsList tm)) model.teamMembers }
+    { model |
+      teamMembers =
+        List.map (\(id, tm) -> (id, applyNamedAssignmentsList tm)) model.teamMembers }
 
 -- Adds a new team member. No change if a team member with the specified
 -- name is already present.

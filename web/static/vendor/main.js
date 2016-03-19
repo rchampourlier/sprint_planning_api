@@ -11548,7 +11548,7 @@ Elm.TeamMember.make = function (_elm) {
                return _U.update(model,{assignmentReviewer: _p3});
             }
       });
-      return A3($List.foldl,applyAssignment,model,roleAssignments);
+      return A3($List.foldl,applyAssignment,updateAssignmentsReset(model),roleAssignments);
    });
    var update = F2(function (action,model) {
       var _p4 = action;
@@ -11665,7 +11665,7 @@ Elm.TeamMemberList.make = function (_elm) {
          namedAssignmentsList));
          var _p2 = maybeMatchingAssignments;
          if (_p2.ctor === "Nothing") {
-               return teamMemberModel;
+               return $TeamMember.updateAssignmentsReset(teamMemberModel);
             } else {
                return A2($TeamMember.updateAssignments,teamMemberModel,_p2._0._1);
             }
