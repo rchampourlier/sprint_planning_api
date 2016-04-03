@@ -11340,10 +11340,10 @@ Elm.Issue.make = function (_elm) {
    });
    var Unassign = function (a) {    return {ctor: "Unassign",_0: a};};
    var Assign = F2(function (a,b) {    return {ctor: "Assign",_0: a,_1: b};});
-   var init = F5(function (key,summary,estimate,maybeDeveloperName,maybeReviewerName) {
-      return {key: key,summary: summary,estimate: estimate,developerName: maybeDeveloperName,reviewerName: maybeReviewerName,isBeingUpdated: false};
+   var init = F6(function (key,summary,rank,estimate,maybeDeveloperName,maybeReviewerName) {
+      return {key: key,summary: summary,rank: rank,estimate: estimate,developerName: maybeDeveloperName,reviewerName: maybeReviewerName,isBeingUpdated: false};
    });
-   var Model = F6(function (a,b,c,d,e,f) {    return {key: a,summary: b,estimate: c,developerName: d,reviewerName: e,isBeingUpdated: f};});
+   var Model = F7(function (a,b,c,d,e,f,g) {    return {key: a,summary: b,rank: c,estimate: d,developerName: e,reviewerName: f,isBeingUpdated: g};});
    var Reviewer = {ctor: "Reviewer"};
    var Developer = {ctor: "Developer"};
    var view = F3(function (address,model,teamMemberNames) {
@@ -11867,10 +11867,11 @@ Elm.SprintPlanning.make = function (_elm) {
    $TeamMember = Elm.TeamMember.make(_elm),
    $TeamMemberList = Elm.TeamMemberList.make(_elm);
    var _op = {};
-   var decodeIssue = A6($Json$Decode.object5,
+   var decodeIssue = A7($Json$Decode.object6,
    $Issue.init,
    A2($Json$Decode._op[":="],"key",$Json$Decode.string),
    A2($Json$Decode._op[":="],"summary",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"rank",$Json$Decode.string),
    $Json$Decode.oneOf(_U.list([A2($Json$Decode._op[":="],"estimate",$Json$Decode.$int),$Json$Decode.succeed(0)])),
    $Json$Decode.maybe(A2($Json$Decode._op[":="],"developer",$Json$Decode.string)),
    $Json$Decode.maybe(A2($Json$Decode._op[":="],"reviewer",$Json$Decode.string)));
@@ -11894,6 +11895,7 @@ Elm.SprintPlanning.make = function (_elm) {
    });
    var ModifyIssue = F2(function (a,b) {    return {ctor: "ModifyIssue",_0: a,_1: b};});
    var viewIssues = F3(function (address,issues,teamMemberNames) {
+      var rankSortedIssues = A2($List.sortBy,function (i) {    return i.rank;},issues);
       var viewIssue = function (issue) {    return A3($Issue.view,A2($Signal.forwardTo,address,ModifyIssue(issue)),issue,teamMemberNames);};
       return A2($Html.div,
       _U.list([]),
@@ -11907,7 +11909,7 @@ Elm.SprintPlanning.make = function (_elm) {
                       ,A2($Html.th,_U.list([]),_U.list([$Html.text("Estimate")]))
                       ,A2($Html.th,_U.list([]),_U.list([$Html.text("Developer")]))
                       ,A2($Html.th,_U.list([]),_U.list([$Html.text("Reviewer")]))]))]))
-              ,A2($Html.tbody,_U.list([]),A2($List.map,viewIssue,issues))]))]));
+              ,A2($Html.tbody,_U.list([]),A2($List.map,viewIssue,rankSortedIssues))]))]));
    });
    var HideAppStatusLine = {ctor: "HideAppStatusLine"};
    var FetchIssues = {ctor: "FetchIssues"};

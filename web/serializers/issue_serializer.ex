@@ -1,7 +1,7 @@
 defmodule PlanningTool.IssueSerializer do
   use Remodel
 
-  attributes [:key, :summary, :description, :estimate, :developer, :reviewer]
+  attributes [:key, :summary, :description, :rank, :estimate, :developer, :reviewer]
 
   def key(record) do
     record["key"]
@@ -13,6 +13,10 @@ defmodule PlanningTool.IssueSerializer do
 
   def description(record) do
     record["fields"]["description"]
+  end
+
+  def rank(record) do
+    record["fields"]["customfield_10100"]
   end
 
   # Returns remaining estimate in hours

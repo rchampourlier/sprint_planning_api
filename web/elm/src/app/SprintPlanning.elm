@@ -256,6 +256,7 @@ viewIssues address issues teamMemberNames =
   let
     viewIssue : Issue.Model -> Html
     viewIssue issue = Issue.view (Signal.forwardTo address (ModifyIssue issue)) issue teamMemberNames
+    rankSortedIssues = List.sortBy (\i -> i.rank) issues
   in
     div []
       [ table [ class "mui-table issues-list" ]
@@ -267,7 +268,7 @@ viewIssues address issues teamMemberNames =
             , th [] [ text "Reviewer" ]
             ]
           ]
-        , tbody [] (List.map viewIssue issues)
+        , tbody [] (List.map viewIssue rankSortedIssues)
         ]
       ]
 
@@ -297,9 +298,10 @@ effectFetchIssues maybeSprintName =
 -- without more warning.
 decodeIssue : Json.Decoder Issue.Model
 decodeIssue =
-  Json.object5 Issue.init
+  Json.object6 Issue.init
     ("key" := Json.string)
     ("summary" := Json.string)
+    ("rank" := Json.string)
     (Json.oneOf [ "estimate" := Json.int, Json.succeed 0 ])
     (Json.maybe ( "developer" := Json.string ))
     (Json.maybe ( "reviewer" := Json.string ))

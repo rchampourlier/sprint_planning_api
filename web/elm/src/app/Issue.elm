@@ -18,16 +18,18 @@ type Role = Developer | Reviewer
 type alias Model =
   { key : String
   , summary : String
+  , rank : String
   , estimate : Int
   , developerName : Maybe String
   , reviewerName : Maybe String
   , isBeingUpdated : Bool
   }
 
-init : String -> String -> Int -> Maybe String -> Maybe String -> Model
-init key summary estimate maybeDeveloperName maybeReviewerName =
+init : String -> String -> String -> Int -> Maybe String -> Maybe String -> Model
+init key summary rank estimate maybeDeveloperName maybeReviewerName =
   { key = key
   , summary = summary
+  , rank = rank
   , estimate = estimate
   , developerName = maybeDeveloperName
   , reviewerName = maybeReviewerName

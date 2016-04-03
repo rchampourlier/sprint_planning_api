@@ -6,20 +6,22 @@ defmodule PlanningTool.JIRA.FetchIssues.InMemory do
   end
 
   defp build_issue(key) do
+    estimate = :random.uniform(100*3600)
     %{
       "key" => key,
       "fields" => %{
         "summary" => "summary",
         "description" => "description",
         "timetracking" => %{
-          "remainingEstimateSeconds" => :random.uniform(100*3600)
+          "remainingEstimateSeconds" => estimate
         },
         "customfield_10600" => %{
           "key" => "author-#{:random.uniform(3)}"
         },
         "customfield_10601" => %{
           "key" => "author-#{:random.uniform(3)}"
-        }
+        },
+        "customfield_10100" => "0|#{key}:"
       }
     }
   end
