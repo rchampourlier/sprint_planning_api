@@ -1,7 +1,7 @@
 module TeamMemberList where
 
 import Html exposing (..)
-import Html.Attributes exposing (class, style, draggable)
+import Html.Attributes exposing (class, style, title)
 import Html.Events exposing (onClick)
 import List
 import ListFunctions exposing (indexList)
@@ -140,9 +140,15 @@ view address model =
       True  -> model.teamMembers
       False -> List.filter (\(_, tm) -> TeamMember.getCapacity tm > 0) model.teamMembers
     viewList = List.concatMap (viewTeamMember address maxCapacity) showedTeamMembers
+    headerRow = tr []
+      [ th [ title "Team member" ] [ text "" ]
+      , th [ title "Capacity" ] [ text "" ]
+      , th [ title "Assigned" ] [ text "A" ]
+      , th [ title "Remaining" ] [ text "R" ]
+      ]
   in
     div []
-      [ table [ class "team-members-list" ] viewList
+      [ table [ class "team-members-list" ] ([ headerRow ] ++ viewList)
       , div [ class "team-members-list__buttons" ]
         [ viewButtonAdd
         , viewButtonToggleCapacityEdition address model

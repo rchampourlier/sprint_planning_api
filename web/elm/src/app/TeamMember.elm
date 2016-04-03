@@ -1,7 +1,7 @@
 module TeamMember where
 
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, title)
 import IntegerInput
 import StringInput
 
@@ -38,6 +38,10 @@ getCapacity model =
 getName : Model -> String
 getName model =
   StringInput.getValue model.nameInput
+
+getRemaining : Model -> Float
+getRemaining model =
+  (toFloat (getCapacity model)) - (getAssigned model)
 
 
 -- UPDATE
@@ -86,9 +90,11 @@ view : Signal.Address Action -> Model -> Html
 view address model =
   let
     assigned = floatRound (getAssigned model) 1
+    remaining = floatRound (getRemaining model) 1
     viewNameInput = StringInput.view (Signal.forwardTo address ModifyName) model.nameInput
     viewCapacityInput = IntegerInput.view (Signal.forwardTo address ModifyCapacity) model.capacityInput
-    viewAssigned = span [] [ text (toString assigned) ]
+    viewAssigned = span [ title "Assigned" ] [ text (toString assigned) ]
+    viewRemaining = span [ title "Remaining" ] [ text (toString remaining) ]
   in
     tr [ class "team-members-list__item" ]
       [ td
@@ -100,4 +106,7 @@ view address model =
       , td
         [ class "team-members-list__item__segment team-members-list__item__segment--assigned" ]
         [ viewAssigned ]
+      , td
+        [ class "team-members-list__item__segment team-members-list__item__segment--remaining" ]
+        [ viewRemaining ]
       ]

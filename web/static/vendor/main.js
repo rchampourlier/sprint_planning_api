@@ -11563,11 +11563,14 @@ Elm.TeamMember.make = function (_elm) {
    var getName = function (model) {    return $StringInput.getValue(model.nameInput);};
    var getCapacity = function (model) {    return $IntegerInput.getValue(model.capacityInput);};
    var getAssigned = function (model) {    return $Basics.toFloat(model.assignmentDeveloper);};
+   var getRemaining = function (model) {    return $Basics.toFloat(getCapacity(model)) - getAssigned(model);};
    var view = F2(function (address,model) {
       var viewCapacityInput = A2($IntegerInput.view,A2($Signal.forwardTo,address,ModifyCapacity),model.capacityInput);
       var viewNameInput = A2($StringInput.view,A2($Signal.forwardTo,address,ModifyName),model.nameInput);
+      var remaining = A2($MathUtils.floatRound,getRemaining(model),1);
+      var viewRemaining = A2($Html.span,_U.list([$Html$Attributes.title("Remaining")]),_U.list([$Html.text($Basics.toString(remaining))]));
       var assigned = A2($MathUtils.floatRound,getAssigned(model),1);
-      var viewAssigned = A2($Html.span,_U.list([]),_U.list([$Html.text($Basics.toString(assigned))]));
+      var viewAssigned = A2($Html.span,_U.list([$Html$Attributes.title("Assigned")]),_U.list([$Html.text($Basics.toString(assigned))]));
       return A2($Html.tr,
       _U.list([$Html$Attributes.$class("team-members-list__item")]),
       _U.list([A2($Html.td,
@@ -11578,7 +11581,10 @@ Elm.TeamMember.make = function (_elm) {
               _U.list([viewCapacityInput]))
               ,A2($Html.td,
               _U.list([$Html$Attributes.$class("team-members-list__item__segment team-members-list__item__segment--assigned")]),
-              _U.list([viewAssigned]))]));
+              _U.list([viewAssigned]))
+              ,A2($Html.td,
+              _U.list([$Html$Attributes.$class("team-members-list__item__segment team-members-list__item__segment--remaining")]),
+              _U.list([viewRemaining]))]));
    });
    var init = F2(function (name,capacity) {
       return {capacityInput: $IntegerInput.init(capacity),nameInput: $StringInput.init(name),assignmentDeveloper: 0,assignmentReviewer: 0};
@@ -11594,6 +11600,7 @@ Elm.TeamMember.make = function (_elm) {
                                    ,getAssigned: getAssigned
                                    ,getCapacity: getCapacity
                                    ,getName: getName
+                                   ,getRemaining: getRemaining
                                    ,ModifyCapacity: ModifyCapacity
                                    ,ModifyName: ModifyName
                                    ,update: update
@@ -11627,7 +11634,7 @@ Elm.ProgressBar.make = function (_elm) {
       return A2($Html.tr,
       _U.list([$Html$Attributes.$class("meter")]),
       _U.list([A2($Html.td,
-      _U.list([$Html$Attributes.colspan(3)]),
+      _U.list([$Html$Attributes.colspan(4)]),
       _U.list([A2($Html.span,
       _U.list([$Html$Attributes.$class("meter__level")
               ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "width",_1: styleWidth},{ctor: "_Tuple2",_0: "background-color",_1: color}]))]),
@@ -11724,6 +11731,12 @@ Elm.TeamMemberList.make = function (_elm) {
       $List.maximum(A2($List.map,function (_p10) {    var _p11 = _p10;return $TeamMember.getCapacity(_p11._1);},model.teamMembers)));
    };
    var view = F2(function (address,model) {
+      var headerRow = A2($Html.tr,
+      _U.list([]),
+      _U.list([A2($Html.th,_U.list([$Html$Attributes.title("Team member")]),_U.list([$Html.text("")]))
+              ,A2($Html.th,_U.list([$Html$Attributes.title("Capacity")]),_U.list([$Html.text("")]))
+              ,A2($Html.th,_U.list([$Html$Attributes.title("Assigned")]),_U.list([$Html.text("A")]))
+              ,A2($Html.th,_U.list([$Html$Attributes.title("Remaining")]),_U.list([$Html.text("R")]))]));
       var showedTeamMembers = function () {
          var _p12 = model.isShowingUsersWithZeroCapacity;
          if (_p12 === true) {
@@ -11739,7 +11752,7 @@ Elm.TeamMemberList.make = function (_elm) {
       var viewList = A2($List.concatMap,A2(viewTeamMember,address,maxCapacity),showedTeamMembers);
       return A2($Html.div,
       _U.list([]),
-      _U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),viewList)
+      _U.list([A2($Html.table,_U.list([$Html$Attributes.$class("team-members-list")]),A2($Basics._op["++"],_U.list([headerRow]),viewList))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("team-members-list__buttons")]),
               _U.list([viewButtonAdd

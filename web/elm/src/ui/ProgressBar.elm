@@ -31,7 +31,7 @@ view value =
     meterText = color ++ ", " ++ styleWidth
   in
     tr [ class "meter" ]
-      [ td [ colspan 3 ]
+      [ td [ colspan 4 ]
         [ span
           [ class "meter__level"
           , style
